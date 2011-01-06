@@ -20,6 +20,9 @@ void __fastcall TDM::DataModuleCreate(TObject *Sender)
 	DWConnection->Open();
 
 	mediaList = new list<MediaFile*>();
+	columnsMatch = new map<AnsiString,AnsiString>();
+
+	loadColumnsMatch();
 
 	iterateScouting ( "G:\\01 importacion masiva de datos\\01 scouting");
 }
@@ -29,6 +32,7 @@ void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 	DWConnection->Close();
 	clearMediaList();
 	delete mediaList;
+	delete columnsMatch;
 }
 //---------------------------------------------------------------------------
 
@@ -89,10 +93,17 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 			{
 				//2 - Cargo la lista de media
 				loadMediaList ( path );
+				try
+				{
+					//3 - Proceso el excel
+					loadCurrentScouting();
+				}
+				catch (...)
+				{
+					log ( "ERROR LECTURA XLS : " + path + "\\" + sr.Name );
+				}
 
-				//3 - Proceso el excel
-				loadCurrentScouting();
-
+				XLSConnection->Close();
 			}
 			else
 			{
@@ -147,25 +158,88 @@ void TDM::loadMediaList ( const AnsiString& path )
 
 //---------------------------------------------------------------------------
 
+void TDM::saveScoutPerson ( ScoutPerson* sp )
+{
+	// TODO
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::loadCurrentScouting ( void )
 {
 	if ( XLSQuery->Active )
 		XLSQuery->Close();
 
 	 XLSQuery->SQL->Text = "Select * from [Hoja1$]";
-	 XLSQuery->Open();
+
+	 try
+	 {
+		XLSQuery->Open();
+	 }
+	 catch ( ... )
+	 {
+		XLSQuery->SQL->Text = "Select * from [Sheet1$]";
+		XLSQuery->Open();
+	 }
+
+	 clearScoutColumnsMatched();
+
+	 bool f_schema = false;
+	 int schema_match_count = 0;
 
 	 while ( !XLSQuery->Eof )
 	 {
+		AnsiString t;
 
-	 	AnsiString t;
-		for ( int i = 0 ; i < XLSQuery->FieldCount ; i++ )
+		if ( !f_schema )
 		{
-			t = XLSQuery->Fields->Fields[i]->AsString;
+			for ( int i = 0 ; i < XLSQuery->FieldCount ; i++ )
+			{
+				t = XLSQuery->Fields->Fields[i]->AsString;
+
+				if ( t != NULL )
+				{
+					t = Trim( UpperCase(t) );
+
+					map<AnsiString,AnsiString>::iterator found = columnsMatch->find ( t );
+					if ( found != columnsMatch->end() )
+					{
+                        scoutColumnsMatched[ (*found).second ] = i;
+						++schema_match_count;
+					}
+				}
+			}
+
+			if ( !f_schema && schema_match_count > 4 )
+				f_schema = true;
+			else
+			{
+				clearScoutColumnsMatched();
+				schema_match_count = 0;
+			}
+		}
+		else
+		{
+			ScoutPerson* sp = new ScoutPerson();
+
+			sp->code = ( scoutColumnsMatched[ COLUMN_CODE ] != -1 ) ?
+				extractPersonCode ( XLSQuery->Fields->Fields[ scoutColumnsMatched[ COLUMN_CODE ] ]->AsString ) : -1;
+
+			sp->age = ( scoutColumnsMatched[ COLUMN_AGE ] != -1 ) ?
+				StrToIntDef ( XLSQuery->Fields->Fields[ scoutColumnsMatched[ COLUMN_AGE ] ]->AsString , -1 ) : -1;
+
+			// TODO: Completar los demas campos
+
+			// A la base de datos
+			saveScoutPerson ( sp );
+
+			delete sp;
 		}
 
 	 	XLSQuery->Next();
 	 }
+
+	 XLSQuery->Close();
 }
 
 //---------------------------------------------------------------------------
@@ -231,3 +305,42 @@ int TDM::extractPersonCode ( const AnsiString& fullString )
 	}
 	return ( temp.Length() > 0 ) ? StrToInt ( temp ) : -1;
 }
+
+//---------------------------------------------------------------------------
+
+void TDM::loadColumnsMatch ( void )
+{
+	//TODO: Cargar del disco.
+	// SINONIMOS DE COLUMNAS.
+	map<AnsiString,AnsiString>& M = *columnsMatch;
+
+	M["Nº"] 			   	= COLUMN_CODE;
+	M["FECHA DE SCOUTING"]  = COLUMN_DATE;
+	M["NOMBRE Y APELLIDO"]  = COLUMN_NAME;
+	M["FECHA  NAC"] 	    = COLUMN_BORNDATE;
+	M["EDAD"]			    = COLUMN_AGE;
+	M["TELEFONO"]		    = COLUMN_TELEPHONE;
+	M["CELULAR"] 		    = COLUMN_CELPHONE;
+	M["ALTURA"] 		    = COLUMN_HEIGHT;
+	M["PESO"] 		        = COLUMN_WEIGHT;
+	M["OBSERVACIONES"] 	    = COLUMN_OBSERVATIONS;
+	M["LUGAR SCOUTING"]     = COLUMN_PLACE;
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::clearScoutColumnsMatched ( void )
+{
+	scoutColumnsMatched[COLUMN_CODE] 	     = -1;
+	scoutColumnsMatched[COLUMN_DATE] 	     = -1;
+	scoutColumnsMatched[COLUMN_NAME] 	     = -1;
+	scoutColumnsMatched[COLUMN_BORNDATE]     = -1;
+	scoutColumnsMatched[COLUMN_AGE]          = -1;
+	scoutColumnsMatched[COLUMN_TELEPHONE]    = -1;
+	scoutColumnsMatched[COLUMN_CELPHONE]     = -1;
+	scoutColumnsMatched[COLUMN_HEIGHT]       = -1;
+	scoutColumnsMatched[COLUMN_WEIGHT]       = -1;
+	scoutColumnsMatched[COLUMN_OBSERVATIONS] = -1;
+	scoutColumnsMatched[COLUMN_PLACE]        = -1;
+}
+
