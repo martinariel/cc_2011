@@ -10,6 +10,11 @@
 #include <ADODB.hpp>
 #include <DB.hpp>
 #include <list.h>
+#include <map.h>
+
+#include "ColumnsDefs.h"
+#include "ScoutPerson.h"
+
 
 //---------------------------------------------------------------------------
 
@@ -33,11 +38,12 @@ __published:	// IDE-managed Components
 	void __fastcall DataModuleCreate(TObject *Sender);
 	void __fastcall DataModuleDestroy(TObject *Sender);
 
-
-
 private:	// User declarations
 
 	list<MediaFile*>* mediaList;
+
+	map<AnsiString,AnsiString>* columnsMatch;
+	map<AnsiString,int> scoutColumnsMatched;
 
 	AnsiString anio;
 	AnsiString codigo;
@@ -58,7 +64,11 @@ private:	// User declarations
 
 	void log ( const AnsiString& msg );
 
+	void loadColumnsMatch ( void );
 
+	void clearScoutColumnsMatched ( void );
+
+	void saveScoutPerson ( ScoutPerson* sp );
 
 public:		// User declarations
 	__fastcall TDM(TComponent* Owner);
