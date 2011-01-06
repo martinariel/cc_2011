@@ -32,13 +32,28 @@ void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void TDM::connectXLS ( const AnsiString& fileName )
+bool TDM::connectXLS ( const AnsiString& fileName )
 {
-	if ( XLSConnection->Connected )
-		XLSConnection->Close();
+	try
+	{
+		if ( XLSConnection->Connected )
+			XLSConnection->Close();
 
-	XLSConnection->ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fileName + ";Extended Properties=Excel 8.0";
-	XLSConnection->Open();
+		XLSConnection->ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fileName + ";Extended Properties='Excel 8.0;HDR=NO;IMEX=1'";
+		XLSConnection->Open();
+
+		return true;
+	}
+	catch ( ... )
+	{
+		return false;
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::log ( const AnsiString& msg )
+{
 }
 
 //---------------------------------------------------------------------------
@@ -70,14 +85,20 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 		}	}	else	{		//1 - Busco el excel
 		if ( FindFirst ( path + "\\*.xls" , faArchive , sr )  == 0 )
 		{
-        	connectXLS( path + "\\" + sr.Name );
+			if ( connectXLS( path + "\\" + sr.Name ) )
+			{
+				//2 - Cargo la lista de media
+				loadMediaList ( path );
+
+				//3 - Proceso el excel
+				loadCurrentScouting();
+
+			}
+			else
+			{
+				log ( "ERROR APERTURA XLS : " + path + "\\" + sr.Name );
+			}
 		}
-
-		//2 - Cargo la lista de media
-		loadMediaList ( path );
-
-		//3 - Proceso el excel
-		loadCurrentScouting();
     }}
 
 //---------------------------------------------------------------------------
@@ -111,11 +132,11 @@ void TDM::loadMediaList ( const AnsiString& path )
 				while ( FindNext(srMedia) == 0 );
 			}
 		}
-		while (FindNext(sr) == 0);
+		while ( FindNext ( sr ) == 0 );
 		FindClose(sr);
 	}
 
-	// Terminamos de cargar la media list, ahora completamos los personcode utilizando la regex
+	// Terminamos de cargar la media list, ahora completamos los personcode utilizando la "regex"
 
 	for ( list<MediaFile*>::iterator i = mediaList->begin() ; i != mediaList->end(); ++i )
 	{
@@ -128,7 +149,23 @@ void TDM::loadMediaList ( const AnsiString& path )
 
 void TDM::loadCurrentScouting ( void )
 {
+	if ( XLSQuery->Active )
+		XLSQuery->Close();
 
+	 XLSQuery->SQL->Text = "Select * from [Hoja1$]";
+	 XLSQuery->Open();
+
+	 while ( !XLSQuery->Eof )
+	 {
+
+	 	AnsiString t;
+		for ( int i = 0 ; i < XLSQuery->FieldCount ; i++ )
+		{
+			t = XLSQuery->Fields->Fields[i]->AsString;
+		}
+
+	 	XLSQuery->Next();
+	 }
 }
 
 //---------------------------------------------------------------------------
@@ -182,7 +219,6 @@ void TDM::clearMediaList ( void )
 int TDM::extractPersonCode ( const AnsiString& fullString )
 {
 	AnsiString temp;
-
 	for ( int i = 0 ; i < fullString.Length() ; i++ )
 	{
 		char ch = fullString[i+1];

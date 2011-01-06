@@ -18,4 +18,10 @@ object DM: TDM
     Left = 168
     Top = 56
   end
+  object XLSQuery: TADOQuery
+    Connection = XLSConnection
+    Parameters = <>
+    Left = 264
+    Top = 64
+  end
 end
