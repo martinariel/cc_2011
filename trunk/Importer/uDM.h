@@ -28,6 +28,7 @@ class TDM : public TDataModule
 __published:	// IDE-managed Components
 	TADOConnection *DWConnection;
 	TADOConnection *XLSConnection;
+	TADOQuery *XLSQuery;
 
 	void __fastcall DataModuleCreate(TObject *Sender);
 	void __fastcall DataModuleDestroy(TObject *Sender);
@@ -45,7 +46,7 @@ private:	// User declarations
 
 	void clearMediaList( void );
 
-	void connectXLS      ( const AnsiString& fileName  );
+	bool connectXLS      ( const AnsiString& fileName  );
 	void loadMediaList   ( const AnsiString& path );
 	void iterateScouting ( const AnsiString& path , int level = 0 );
 	void loadCurrentScouting ( void );
@@ -54,6 +55,8 @@ private:	// User declarations
 
 	bool isMediaFolder ( const AnsiString& name );
 	bool isMediaFile   ( const AnsiString& name );
+
+	void log ( const AnsiString& msg );
 
 
 
