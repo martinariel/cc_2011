@@ -12,6 +12,10 @@
 #include <list.h>
 #include <map.h>
 
+#include <iostream>
+#include <string>
+#include <fstream>
+
 #include "ColumnsDefs.h"
 #include "ScoutPerson.h"
 
@@ -43,7 +47,8 @@ private:	// User declarations
 	list<MediaFile*>* mediaList;
 
 	map<AnsiString,AnsiString>* columnsMatch;
-	map<AnsiString,int> scoutColumnsMatched;
+	map<AnsiString,int> scoutMatched;
+	AnsiString currentXLS;
 
 	AnsiString anio;
 	AnsiString codigo;

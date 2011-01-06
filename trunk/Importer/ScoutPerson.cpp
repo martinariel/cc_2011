@@ -9,6 +9,8 @@
 
 ScoutPerson::ScoutPerson ( void )
 {
+	age = code = weight = height = -1;
+	date = name = place = observations = borndate = telephone = celphone = "";
 }
 
 #pragma package(smart_init)
