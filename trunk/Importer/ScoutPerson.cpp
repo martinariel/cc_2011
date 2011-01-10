@@ -10,7 +10,8 @@
 ScoutPerson::ScoutPerson ( void )
 {
 	age = code = weight = height = -1;
-	date = name = place = observations = borndate = telephone = celphone = "";
+	date = name = place = observations = borndate = telephone = celphone = email = activities = "";
+	nacionality = languages = "";
 }
 
 #pragma package(smart_init)

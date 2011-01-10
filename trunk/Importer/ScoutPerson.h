@@ -9,7 +9,8 @@ class ScoutPerson
 public:
 
 	int code, age, weight, height;
-	AnsiString date,name,place,observations,telephone,celphone,borndate;
+	AnsiString date,name,place,observations,telephone,celphone,borndate,email;
+	AnsiString activities,nacionality, languages;
 
 	ScoutPerson ( void );
 };

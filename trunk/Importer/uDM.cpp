@@ -24,7 +24,11 @@ void __fastcall TDM::DataModuleCreate(TObject *Sender)
 
 	loadColumnsMatch();
 
+	tScoutImport->Open();
+
 	iterateScouting ( "G:\\01 importacion masiva de datos\\01 scouting");
+
+	tScoutImport->Close();
 }
 //---------------------------------------------------------------------------
 void __fastcall TDM::DataModuleDestroy(TObject *Sender)
@@ -97,15 +101,21 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 				loadMediaList ( path );
 				try
 				{
-					//3 - Proceso el excel
+					//clearTable("SCOUT_IMPORT");
+					//tScoutImport->Open();
+
+					//3 - TODO: Vacio la tabla de proceso
+					//4 - Proceso el excel
 					loadCurrentScouting();
+
+					//tScoutImport->Close();
+
+					XLSConnection->Close();
 				}
 				catch (...)
 				{
 					log ( "ERROR LECTURA XLS : " + path + "\\" + sr.Name );
 				}
-
-				XLSConnection->Close();
 			}
 			else
 			{
@@ -160,9 +170,96 @@ void TDM::loadMediaList ( const AnsiString& path )
 
 //---------------------------------------------------------------------------
 
+void TDM::clearTable ( const AnsiString& tableName )
+{
+	DWConnection->Execute ( "TRUNCATE TABLE " + tableName );
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::saveScoutPerson ( ScoutPerson* sp )
 {
-	// TODO
+	tScoutImport->Append();
+
+	tScoutImportACTIVIDADES->Value      = sp->activities;
+	tScoutImportALTURA->Value           = sp->height;
+	tScoutImportCELULAR->Value          = sp->celphone;
+	tScoutImportCODIGO->Value           = sp->code;
+	tScoutImportEDAD->Value             = sp->age;
+	tScoutImportEMAIL->Value            = sp->email;
+	tScoutImportFECHA_NACIMIENTO->Value = sp->borndate;
+	tScoutImportFECHA_SCOUT->Value      = sp->date;
+	tScoutImportIDIOMAS->Value          = sp->languages;
+	tScoutImportLUGAR_SCOUT->Value      = sp->place;
+	tScoutImportNACIONALIDAD->Value     = sp->nacionality;
+	tScoutImportNOMBRE->Value           = sp->name;
+	tScoutImportOBSERVACIONES->Value    = sp->observations;
+	tScoutImportPESO->Value   			= sp->weight;
+	tScoutImportTELEFONO->Value         = sp->telephone;
+
+	/// Datos de cabecera ( o como llegue a cada una de las personas)
+	tScoutImportXLS_FILE->Value         = currentXLS;
+	tScoutImportANIO->Value             = StrToInt ( anio );
+	tScoutImportMES->Value              = mes;
+	tScoutImportDIA->Value     			= dia;
+	tScoutImportCODIGO_AGRUPADOR->Value = codigo;
+
+	tScoutImport->Post();
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::mapScoutPerson ( ScoutPerson* sp )
+{
+	UnicodeString empty = "";
+	AnsiString t;
+
+	sp->code = ( scoutMatched[ COLUMN_CODE ] != -1 ) ?
+				extractPersonCode ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CODE ] ]->AsString )  : -1;
+
+	sp->age    = ( scoutMatched[ COLUMN_AGE ] != -1 ) ?
+		StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_AGE    ] ]->AsString , -1 ) : -1;
+
+	sp->weight = ( scoutMatched[ COLUMN_WEIGHT ] != -1  ) ?
+		StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_WEIGHT ] ]->AsString , -1 ) : -1;
+
+	t = ( scoutMatched[ COLUMN_HEIGHT ] != -1  ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_HEIGHT ] ]->AsString : (UnicodeString) "-1" ;
+
+	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
+
+	sp->date = ( scoutMatched[ COLUMN_DATE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_DATE ] ]->AsString  : empty ;
+
+	sp->name = ( scoutMatched[ COLUMN_NAME ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_NAME ] ]->AsString  : empty ;
+
+	sp->place = ( scoutMatched[ COLUMN_PLACE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_PLACE ] ]->AsString  : empty ;
+
+	sp->observations = ( scoutMatched[ COLUMN_OBSERVATIONS ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_OBSERVATIONS ] ]->AsString : empty ;
+
+	sp->telephone = ( scoutMatched[ COLUMN_TELEPHONE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_TELEPHONE ] ]->AsString  : empty ;
+
+	sp->celphone = ( scoutMatched[ COLUMN_CELPHONE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CELPHONE ] ]->AsString  : empty ;
+
+	sp->borndate = ( scoutMatched[ COLUMN_BORNDATE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_BORNDATE ] ]->AsString  : empty ;
+
+	sp->email = ( scoutMatched[ COLUMN_EMAIL ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_EMAIL ] ]->AsString  : empty ;
+
+	sp->activities = ( scoutMatched[ COLUMN_ACTIVITIES ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_ACTIVITIES ] ]->AsString  : empty ;
+
+	sp->nacionality = ( scoutMatched[ COLUMN_NACIONALITY ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_NACIONALITY ] ]->AsString  : empty ;
+
+	sp->languages = ( scoutMatched[ COLUMN_LANGUAGES ] != -1 ) ?
+		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_LANGUAGES ] ]->AsString  : empty ;
 }
 
 //---------------------------------------------------------------------------
@@ -174,8 +271,6 @@ void TDM::loadCurrentScouting ( void )
 
 	XLSQuery->SQL->Text = "Select * from [Hoja1$]";
 
-	UnicodeString empty = "";
-
 	try
 	{
 		XLSQuery->Open();
@@ -186,7 +281,11 @@ void TDM::loadCurrentScouting ( void )
 		XLSQuery->Open();
 	}
 
+
+	#ifdef DEBUG_TO_DISC
 	ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".scout_not_match" ).c_str() , ios::app );
+	ofstream mediaListLog  ( ChangeFileExt(Application->ExeName, ".media_list"      ).c_str() , ios::app );
+	#endif
 
 	clearScoutColumnsMatched();
 
@@ -226,15 +325,22 @@ void TDM::loadCurrentScouting ( void )
 			{
 				f_schema = true;
 
-
+				#ifdef DEBUG_TO_DISC
+				//Output the non-matched columns to disk
 				if ( notMatchedColumns->size() > 0 )
+				{
 					notMatchedLog << currentXLS.c_str() << "  -------------------------------------------- " << std::endl;
 
-				//Output to disk the non-matched columns
-				for ( list<AnsiString>::const_iterator it = notMatchedColumns->begin() ; it != notMatchedColumns->end() ; ++it )
-				{
-					notMatchedLog << (*it).c_str() << std::endl;
+					for ( list<AnsiString>::const_iterator it = notMatchedColumns->begin() ; it != notMatchedColumns->end() ; ++it )
+						notMatchedLog << (*it).c_str() << std::endl;
 				}
+
+				// Output the medialist to disc
+				mediaListLog << currentXLS.c_str() << "  ---------------------------------------------------- " << std::endl;
+				mediaListLog << "Size: " << mediaList->size() << std::endl;
+				for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+					mediaListLog << (*it)->code << " = " << (*it)->name.c_str() << std::endl;
+				#endif
 			}
 			else
 			{
@@ -246,52 +352,24 @@ void TDM::loadCurrentScouting ( void )
 		{
 			ScoutPerson* sp = new ScoutPerson();
 
-			sp->code = ( scoutMatched[ COLUMN_CODE ] != -1 ) ?
-				extractPersonCode ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CODE ] ]->AsString )  : -1;
+			// Get the values
+			mapScoutPerson ( sp );
 
-			sp->age    = ( scoutMatched[ COLUMN_AGE ] != -1 ) ?
-				StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_AGE    ] ]->AsString , -1 ) : -1;
-
-			sp->weight = ( scoutMatched[ COLUMN_WEIGHT ] != -1  ) ?
-				StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_WEIGHT ] ]->AsString , -1 ) : -1;
-
-			t = ( scoutMatched[ COLUMN_HEIGHT ] != -1  ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_HEIGHT ] ]->AsString : (UnicodeString) "-1" ;
-
-			sp->height = StrToFloatDef( t , 0 ) * 100; //cm
-
-			sp->date =  ( scoutMatched[ COLUMN_DATE ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_DATE ] ]->AsString  : empty ;
-
-			sp->name =  ( scoutMatched[ COLUMN_NAME ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_NAME ] ]->AsString  : empty ;
-
-			sp->place =  ( scoutMatched[ COLUMN_PLACE ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_PLACE ] ]->AsString  : empty ;
-
-			sp->observations =  ( scoutMatched[ COLUMN_OBSERVATIONS ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_OBSERVATIONS ] ]->AsString : empty ;
-
-			sp->telephone =  ( scoutMatched[ COLUMN_TELEPHONE ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_TELEPHONE ] ]->AsString  : empty ;
-
-			sp->celphone =  ( scoutMatched[ COLUMN_CELPHONE ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CELPHONE ] ]->AsString  : empty ;
-
-			sp->borndate =  ( scoutMatched[ COLUMN_BORNDATE ] != -1 ) ?
-				XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_BORNDATE ] ]->AsString  : empty ;
-
-			// A la base de datos
-			saveScoutPerson ( sp );
+			if ( sp->code > 0 )
+				saveScoutPerson( sp );
 
 			delete sp;
+
 		}
 
 		XLSQuery->Next();
 
 	}
 
+	#ifdef DEBUG_TO_DISC
 	notMatchedLog.close();
+	mediaListLog.close();
+	#endif
 
 	XLSQuery->Close();
 
@@ -302,20 +380,8 @@ void TDM::loadCurrentScouting ( void )
 
 bool TDM::isMediaFolder ( const AnsiString& name )
 {
-	UnicodeString us = LowerCase ( name );
-
-	return (
-		name[1] != '.' &&
-		(
-			Pos ( "foto "   , us ) > 0 ||
-			Pos ( "fotos "  , us ) > 0 ||
-			Pos ( "video "  , us ) > 0 ||
-			Pos ( "videos " , us ) > 0 ||
-			Pos ( "qt  "    , us ) > 0
-		)
-	);
+	return ( name[1] != '.' );
 }
-
 //---------------------------------------------------------------------------
 
 bool TDM::isMediaFile ( const AnsiString& name )
@@ -366,55 +432,16 @@ int TDM::extractPersonCode ( const AnsiString& fullString )
 
 void TDM::loadColumnsMatch ( void )
 {
-	//TODO: Cargar del disco.
 	// SINONIMOS DE COLUMNAS.
 	map<AnsiString,AnsiString>& M = *columnsMatch;
+	tSinonimos->Open();
 
-	M["Nº"] 			   	= COLUMN_CODE;
-	M["Nª"]                 = COLUMN_CODE;
-	M["CODIGO"]             = COLUMN_CODE;
-	M["CóDIGO"]             = COLUMN_CODE;
-	M["NRO"]                = COLUMN_CODE;
-	M["NúMERO"]             = COLUMN_CODE;
-	M["FECHA DE SCOUTING"]  = COLUMN_DATE;
-	M["FECHA SCOUTING"]     = COLUMN_DATE;
-	M["FECHA SCOUT"]        = COLUMN_DATE;
-	M["FECHA"]              = COLUMN_DATE;
-	M["FECHA DE SCOUT"]     = COLUMN_DATE;
-	M["FECHS DE SCOUT"]     = COLUMN_DATE;
-	M["DIA DE SCOUT"]       = COLUMN_DATE;
-	M["NOMBRE Y APELLIDO"]  = COLUMN_NAME;
-	M["NOMBRE"]             = COLUMN_NAME;
-	M["FECHA NAC"] 	        = COLUMN_BORNDATE;
-	M["FECHA NAC."] 	    = COLUMN_BORNDATE;
-	M["FECHA DE NAC"] 	    = COLUMN_BORNDATE;
-	M["FECHA DE NAC."] 	    = COLUMN_BORNDATE;
-	M["EDAD"]			    = COLUMN_AGE;
-	M["TELEFONO"]		    = COLUMN_TELEPHONE;
-	M["TELéFONO"]		    = COLUMN_TELEPHONE;
-	M["TEL"]		        = COLUMN_TELEPHONE;
-	M["TEL."]		        = COLUMN_TELEPHONE;
-	M["CELULAR"] 		    = COLUMN_CELPHONE;
-	M["CELU"] 		        = COLUMN_CELPHONE;
-	M["CEL"] 		        = COLUMN_CELPHONE;
-	M["MOVI"] 		        = COLUMN_CELPHONE;
-	M["MOVIL"] 		        = COLUMN_CELPHONE;
-	M["MOVIL."] 		    = COLUMN_CELPHONE;
-	M["ALTURA"] 		    = COLUMN_HEIGHT;
-	M["ALLTURA"] 		    = COLUMN_HEIGHT;
-	M["ALT"] 		        = COLUMN_HEIGHT;
-	M["ALT."] 		        = COLUMN_HEIGHT;
-	M["PESO"] 		        = COLUMN_WEIGHT;
-	M["PESO."] 		        = COLUMN_WEIGHT;
-	M["OBSERVACIONES"] 	    = COLUMN_OBSERVATIONS;
-	M["OBS"] 	            = COLUMN_OBSERVATIONS;
-	M["OBS."] 	            = COLUMN_OBSERVATIONS;
-	M["LUGAR SCOUTING"]     = COLUMN_PLACE;
-	M["LUGAR DE SCOUTING"]  = COLUMN_PLACE;
-	M["LUGAR DE SCOUT"]     = COLUMN_PLACE;
-	M["LUBAR DE SCOUT"]     = COLUMN_PLACE;
-	M["LUGAR SCOUT"]        = COLUMN_PLACE;
-	M["LUGAR SCOUT."]       = COLUMN_PLACE;
+	while ( !tSinonimos->Eof )
+	{
+		M [ tSinonimosORIGEN->Value ] = tSinonimosDESTINO->Value;
+		tSinonimos->Next();
+	}
+	tSinonimos->Close();
 }
 
 //---------------------------------------------------------------------------
@@ -432,5 +459,9 @@ void TDM::clearScoutColumnsMatched ( void )
 	scoutMatched[COLUMN_WEIGHT]       = -1;
 	scoutMatched[COLUMN_OBSERVATIONS] = -1;
 	scoutMatched[COLUMN_PLACE]        = -1;
+	scoutMatched[COLUMN_EMAIL]        = -1;
+	scoutMatched[COLUMN_ACTIVITIES]   = -1;
+	scoutMatched[COLUMN_NACIONALITY]  = -1;
+	scoutMatched[COLUMN_LANGUAGES]    = -1;
 }
 
