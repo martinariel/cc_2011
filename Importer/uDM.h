@@ -11,6 +11,12 @@
 #include <DB.hpp>
 #include <list.h>
 #include <map.h>
+#include <IdBaseComponent.hpp>
+#include <IdComponent.hpp>
+#include <IdExplicitTLSClientServerBase.hpp>
+#include <IdFTP.hpp>
+#include <IdTCPClient.hpp>
+#include <IdTCPConnection.hpp>
 
 #include <iostream>
 #include <string>
@@ -18,6 +24,8 @@
 
 #include "ColumnsDefs.h"
 #include "ScoutPerson.h"
+
+#define DEBUG_TO_DISC
 
 
 //---------------------------------------------------------------------------
@@ -38,6 +46,32 @@ __published:	// IDE-managed Components
 	TADOConnection *DWConnection;
 	TADOConnection *XLSConnection;
 	TADOQuery *XLSQuery;
+	TIdFTP *FTP;
+	TADOTable *tSinonimos;
+	TStringField *tSinonimosORIGEN;
+	TStringField *tSinonimosDESTINO;
+	TADOTable *tScoutImport;
+	TAutoIncField *tScoutImportID;
+	TIntegerField *tScoutImportCODIGO;
+	TIntegerField *tScoutImportEDAD;
+	TIntegerField *tScoutImportPESO;
+	TIntegerField *tScoutImportALTURA;
+	TStringField *tScoutImportNOMBRE;
+	TStringField *tScoutImportFECHA_NACIMIENTO;
+	TStringField *tScoutImportFECHA_SCOUT;
+	TStringField *tScoutImportLUGAR_SCOUT;
+	TStringField *tScoutImportOBSERVACIONES;
+	TStringField *tScoutImportACTIVIDADES;
+	TStringField *tScoutImportEMAIL;
+	TStringField *tScoutImportTELEFONO;
+	TStringField *tScoutImportCELULAR;
+	TStringField *tScoutImportNACIONALIDAD;
+	TStringField *tScoutImportIDIOMAS;
+	TStringField *tScoutImportXLS_FILE;
+	TIntegerField *tScoutImportANIO;
+	TStringField *tScoutImportMES;
+	TStringField *tScoutImportCODIGO_AGRUPADOR;
+	TStringField *tScoutImportDIA;
 
 	void __fastcall DataModuleCreate(TObject *Sender);
 	void __fastcall DataModuleDestroy(TObject *Sender);
@@ -73,7 +107,10 @@ private:	// User declarations
 
 	void clearScoutColumnsMatched ( void );
 
+    void mapScoutPerson ( ScoutPerson* sp );
 	void saveScoutPerson ( ScoutPerson* sp );
+
+	void clearTable ( const AnsiString& tableName );
 
 public:		// User declarations
 	__fastcall TDM(TComponent* Owner);
