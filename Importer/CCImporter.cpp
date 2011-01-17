@@ -4,8 +4,8 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
-USEFORM("uFrmMain.cpp", Form1);
 USEFORM("uDM.cpp", DM); /* TDataModule: File Type */
+USEFORM("uFrmMain.cpp", FormMain);
 //---------------------------------------------------------------------------
 WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -13,8 +13,8 @@ WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 	{
 		Application->Initialize();
 		Application->MainFormOnTaskBar = true;
-		Application->CreateForm(__classid(TForm1), &Form1);
 		Application->CreateForm(__classid(TDM), &DM);
+		Application->CreateForm(__classid(TFormMain), &FormMain);
 		Application->Run();
 	}
 	catch (Exception &exception)
