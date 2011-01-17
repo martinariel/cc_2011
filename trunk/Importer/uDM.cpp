@@ -84,7 +84,9 @@ void TDM::log ( const AnsiString& msg )
 	Application->ProcessMessages();
 
 	if ( mEstado->Lines->Count == 200 )
-		mEstado->Lines->Clear();
+	{
+	  //	mEstado->Lines->Clear();
+	}
 
 	mEstado->Lines->Add ( msg );
 }
@@ -144,6 +146,7 @@ void TDM::notifyScoutLoad ( void )
 void TDM::iterateCasting ( const AnsiString& path , int level )
 {
 	TSearchRec sr;
+	TSearchRec srAux;
 
 	if ( level < 2 )
 	{
@@ -181,6 +184,45 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 	else if ( level == 3 )
 	{
 
+		bool dayFound = false;
+
+		if ( FindFirst ( path + "\\*.*", faDirectory, sr) == 0)
+		{
+			do
+			{
+				if ( sr.Name[1] == '.')
+					continue;
+
+				// TODO: Chequear si existe la carpeta es una del tipo "dia"
+				// Si lo es, si o si tengo que encontrar un xls adentro, quizas haya mas directorios que recorrer.
+
+				if ( FindFirst ( path + "\\" + sr.Name + "\\*.xls" , faArchive , srAux ) == 0 )
+				{
+					dia = sr.Name;
+
+					log ( dia );
+					log ( path + "\\" + sr.Name + "\\" + srAux.Name );
+					dayFound = true;
+				}
+				FindClose ( srAux );
+			}
+			while (FindNext(sr) == 0);
+			FindClose(sr);
+		}
+
+		if ( !dayFound )
+		{
+
+			if ( FindFirst ( path + "\\*.xls" , faArchive , sr ) == 0 )
+			{
+
+				log ( "SIN DIA " + path + sr.Name );
+
+
+			}
+			FindClose ( sr );
+
+		}
 
 
 	}
