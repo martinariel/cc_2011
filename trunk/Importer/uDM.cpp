@@ -143,6 +143,22 @@ void TDM::notifyScoutLoad ( void )
 
 //---------------------------------------------------------------------------
 
+bool TDM::isDayFolder ( const AnsiString& name )
+{
+	UnicodeString us = LowerCase ( name );
+
+	return ( us[1] != '.' &&
+			(
+				Pos( "dia" , us ) > 0 ||
+				Pos( "día" , us ) > 0 ||
+				( us.Length() > 2 && us[1] == 'd' && isdigit ( us[2] ) )
+
+			)
+	);
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::iterateCasting ( const AnsiString& path , int level )
 {
 	TSearchRec sr;
@@ -190,19 +206,39 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 		{
 			do
 			{
-				if ( sr.Name[1] == '.')
+				if ( !isDayFolder ( sr.Name ) && DirectoryExists( path + "\\" + sr.Name  ) )
+				{
 					continue;
+				}
 
-				// TODO: Chequear si existe la carpeta es una del tipo "dia"
+				dia = sr.Name;
+
 				// Si lo es, si o si tengo que encontrar un xls adentro, quizas haya mas directorios que recorrer.
 
 				if ( FindFirst ( path + "\\" + sr.Name + "\\*.xls" , faArchive , srAux ) == 0 )
 				{
-					dia = sr.Name;
+					currentXLS =  path + "\\" + sr.Name + "\\" + srAux.Name;
+					//log ( "DIA op1: " + currentXLS );
 
-					log ( dia );
-					log ( path + "\\" + sr.Name + "\\" + srAux.Name );
+					// TODO: Load current XLS
+
 					dayFound = true;
+				}
+				else
+				{
+					// 	Me fijo si existe en la carpeta "direccion"
+					FindClose ( srAux );
+
+                    if ( FindFirst ( path + "\\" + sr.Name + "\\direccion\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "direccion\\" + srAux.Name;
+
+						dayFound = true;
+
+						log ( "DIA op2: " + currentXLS );
+
+						// TODO: Load current XLS
+					}
 				}
 				FindClose ( srAux );
 			}
@@ -216,14 +252,19 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 			if ( FindFirst ( path + "\\*.xls" , faArchive , sr ) == 0 )
 			{
 
-				log ( "SIN DIA " + path + sr.Name );
+				log ( "SIN DIAS: " + path + sr.Name );
+				currentXLS =  path + "\\" + sr.Name;
 
+				//TODO: load current XLS
 
+			}
+			else
+			{
+				log ( "VERIFICAR: " + path );
 			}
 			FindClose ( sr );
 
 		}
-
 
 	}
 }

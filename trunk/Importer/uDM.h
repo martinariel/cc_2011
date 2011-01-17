@@ -141,6 +141,8 @@ private:	// User declarations
 
 	TMemo* mEstado;
 
+	bool isDayFolder ( const AnsiString& name );
+
 public:
 
 	// User declarations
@@ -151,6 +153,8 @@ public:
 
 	void log ( const AnsiString& msg );
 	void setLogMemo ( TMemo* memo );
+
+
 
 	// Carga los datos de scouting a partir del path raiz.
 	//
