@@ -50,8 +50,8 @@ object DM: TDM
     Connection = DWConnection
     CursorType = ctStatic
     TableName = 'scout_import'
-    Left = 160
-    Top = 160
+    Left = 144
+    Top = 152
     object tScoutImportID: TAutoIncField
       FieldName = 'ID'
       ReadOnly = True
@@ -130,5 +130,22 @@ object DM: TDM
       FieldName = 'DIA'
       Size = 45
     end
+  end
+  object HTTP: TIdHTTP
+    AllowCookies = True
+    ProxyParams.BasicAuthentication = False
+    ProxyParams.ProxyPort = 0
+    Request.ContentLength = -1
+    Request.ContentRangeEnd = -1
+    Request.ContentRangeStart = -1
+    Request.ContentRangeInstanceLength = -1
+    Request.Accept = 'text/html, */*'
+    Request.BasicAuthentication = False
+    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
+    Request.Ranges.Units = 'bytes'
+    Request.Ranges = <>
+    HTTPOptions = [hoForceEncodeParams]
+    Left = 360
+    Top = 152
   end
 end

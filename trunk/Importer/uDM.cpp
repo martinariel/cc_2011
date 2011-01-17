@@ -16,6 +16,19 @@ __fastcall TDM::TDM(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TDM::DataModuleCreate(TObject *Sender)
 {
+	TIniFile* ini = new TIniFile ( ChangeFileExt ( Application->ExeName , ".ini" ) );
+
+
+	// WEB SETTINGS
+	urlCastProcess  = ini->ReadString ("WEB" , "CAST" , "http://localhost/cc/webApp/load_cast.php");
+	urlScoutProcess = ini->ReadString ("WEB", "SCOUT" , "http://localhost/cc/webApp/load_scout.php");
+
+	// FTP SETTINGS
+
+	ftpServer = ini->ReadString ( "FTP" , "SERVER" , "LOCALHOST" );
+	ftpServer = ini->ReadString ( "FTP" , "USER"   , "ROOT" );
+	ftpServer = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT" );
+
 	DWConnection->ConnectionString = "FILE NAME=" + ChangeFileExt(Application->ExeName, ".udl" );
 	DWConnection->Open();
 
@@ -24,12 +37,12 @@ void __fastcall TDM::DataModuleCreate(TObject *Sender)
 
 	loadColumnsMatch();
 
-	tScoutImport->Open();
+	analisis = false;
 
-	iterateScouting ( "G:\\01 importacion masiva de datos\\01 scouting");
+	delete ini;
 
-	tScoutImport->Close();
 }
+
 //---------------------------------------------------------------------------
 void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 {
@@ -59,12 +72,121 @@ bool TDM::connectXLS ( const AnsiString& fileName )
 }
 
 //---------------------------------------------------------------------------
-
-void TDM::log ( const AnsiString& msg )
+void TDM::setAnalisis ( bool value )
 {
+	this->analisis = value;
 }
 
 //---------------------------------------------------------------------------
+
+void TDM::log ( const AnsiString& msg )
+{
+	Application->ProcessMessages();
+
+	if ( mEstado->Lines->Count == 200 )
+		mEstado->Lines->Clear();
+
+	mEstado->Lines->Add ( msg );
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::setLogMemo ( TMemo* memo )
+{
+	mEstado = memo;
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::uploadMediaList ( void )
+{
+	if ( analisis || 1 == 1)
+		return;
+
+	log ( "   -  Subiendo Archivos de media al FTP Server. " );
+
+	if ( FTP->Connected())
+		FTP->Disconnect();
+
+	FTP->Host     = ftpServer;
+	FTP->Username = ftpUser;
+	FTP->Password = ftpPassword;
+
+	FTP->Connect();
+
+	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+	{
+		MediaFile* mf = *it;
+
+		UnicodeString origin = mf->path;
+		UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
+
+		FTP->Put ( origin , dest );
+	}
+
+	FTP->Disconnect();
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::notifyScoutLoad ( void )
+{
+	if ( analisis )
+		return;
+
+	log ( "   -  Match de personas. " );
+
+	HTTP->Get( urlScoutProcess );
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::iterateCasting ( const AnsiString& path , int level )
+{
+	TSearchRec sr;
+
+	if ( level < 2 )
+	{
+		if ( FindFirst ( path + "\\*.*", faDirectory, sr) == 0)
+		{
+			do
+			{
+				if ( sr.Name[1] == '.')
+					continue;
+
+				switch ( level )
+				{
+				case 0: anio   = sr.Name; break;
+				case 1: codigo = sr.Name; break;
+				}
+				iterateCasting ( path + "\\" + sr.Name , level + 1 );
+			}
+			while (FindNext(sr) == 0);
+			FindClose(sr);
+		}	}	else if ( level == 2 )	{		if ( DirectoryExists( path + "\\casting\\" ) )
+		{
+			iterateCasting ( path +  "\\casting\\" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\direccion\\casting\\" ) )
+		{
+			iterateCasting ( path + "\\direccion\\casting\\" , level + 1 );
+		}
+		else
+		{
+			// TODO a disco
+			log ( path );
+			log ( path + " NO encontrado LEVEL 3");
+		}
+	}
+	else if ( level == 3 )
+	{
+
+
+
+	}
+}
+
+//--------------------------------------------------------------------------
 
 void TDM::iterateScouting ( const AnsiString& path , int level )
 {
@@ -97,29 +219,47 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 			{
 				currentXLS = path + "\\" + sr.Name;
 
-				//2 - Cargo la lista de media
-				loadMediaList ( path );
 				try
 				{
-					//clearTable("SCOUT_IMPORT");
-					//tScoutImport->Open();
 
-					//3 - TODO: Vacio la tabla de proceso
+					log ( "-------------------------------------------------------------------------------------------------" );
+					log ( "Procesando " + currentXLS );
+					log ( "" );
+
+					//2 - Cargo la lista de media
+					loadMediaList ( path );
+
+					//3 Vacio la tabla de proceso
+					if ( !analisis )
+					{
+						log ( "   -  Limpiando tabla de proceso. " );
+						clearTable("SCOUT_IMPORT");
+						tScoutImport->Open();
+					}
+
+					//
 					//4 - Proceso el excel
 					loadCurrentScouting();
 
-					//tScoutImport->Close();
+					//5 - subida FTP
+					uploadMediaList();
+
+					//6 - Notifico a la aplicación web para que procese.
+                    notifyScoutLoad();
+
+					if ( !analisis )
+						tScoutImport->Close();
 
 					XLSConnection->Close();
 				}
 				catch (...)
 				{
-					log ( "ERROR LECTURA XLS : " + path + "\\" + sr.Name );
+					log ( "************* ERROR LECTURA XLS : " + path + "\\" + sr.Name );
 				}
 			}
 			else
 			{
-				log ( "ERROR APERTURA XLS : " + path + "\\" + sr.Name );
+				log ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
 			}
 		}
     }}
@@ -130,6 +270,8 @@ void TDM::loadMediaList ( const AnsiString& path )
 {
 	TSearchRec sr;
 	clearMediaList();
+
+	log ( "   -  Cargando Media. " );
 
 	if ( FindFirst ( path + "\\*.*", faDirectory, sr) == 0)
 	{
@@ -166,6 +308,10 @@ void TDM::loadMediaList ( const AnsiString& path )
 		MediaFile* mf = *i;
 		mf->code = extractPersonCode ( mf->name );
 	}
+
+	int size = mediaList->size();
+
+	log ( "        Cantidad Archivos:" + IntToStr ( size ) );
 }
 
 //---------------------------------------------------------------------------
@@ -179,6 +325,9 @@ void TDM::clearTable ( const AnsiString& tableName )
 
 void TDM::saveScoutPerson ( ScoutPerson* sp )
 {
+	if ( analisis )
+		return;
+
 	tScoutImport->Append();
 
 	tScoutImportACTIVIDADES->Value      = sp->activities;
@@ -214,52 +363,52 @@ void TDM::mapScoutPerson ( ScoutPerson* sp )
 	UnicodeString empty = "";
 	AnsiString t;
 
-	sp->code = ( scoutMatched[ COLUMN_CODE ] != -1 ) ?
-				extractPersonCode ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CODE ] ]->AsString )  : -1;
+	sp->code = ( indexMatched[ COLUMN_CODE ] != -1 ) ?
+				extractPersonCode ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_CODE ] ]->AsString )  : -1;
 
-	sp->age    = ( scoutMatched[ COLUMN_AGE ] != -1 ) ?
-		StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_AGE    ] ]->AsString , -1 ) : -1;
+	sp->age    = ( indexMatched[ COLUMN_AGE ] != -1 ) ?
+		StrToIntDef ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_AGE    ] ]->AsString , -1 ) : -1;
 
-	sp->weight = ( scoutMatched[ COLUMN_WEIGHT ] != -1  ) ?
-		StrToIntDef ( XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_WEIGHT ] ]->AsString , -1 ) : -1;
+	sp->weight = ( indexMatched[ COLUMN_WEIGHT ] != -1  ) ?
+		StrToIntDef ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_WEIGHT ] ]->AsString , -1 ) : -1;
 
-	t = ( scoutMatched[ COLUMN_HEIGHT ] != -1  ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_HEIGHT ] ]->AsString : (UnicodeString) "-1" ;
+	t = ( indexMatched[ COLUMN_HEIGHT ] != -1  ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_HEIGHT ] ]->AsString : (UnicodeString) "-1" ;
 
 	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
 
-	sp->date = ( scoutMatched[ COLUMN_DATE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_DATE ] ]->AsString  : empty ;
+	sp->date = ( indexMatched[ COLUMN_DATE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_DATE ] ]->AsString  : empty ;
 
-	sp->name = ( scoutMatched[ COLUMN_NAME ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_NAME ] ]->AsString  : empty ;
+	sp->name = ( indexMatched[ COLUMN_NAME ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_NAME ] ]->AsString  : empty ;
 
-	sp->place = ( scoutMatched[ COLUMN_PLACE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_PLACE ] ]->AsString  : empty ;
+	sp->place = ( indexMatched[ COLUMN_PLACE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_PLACE ] ]->AsString  : empty ;
 
-	sp->observations = ( scoutMatched[ COLUMN_OBSERVATIONS ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_OBSERVATIONS ] ]->AsString : empty ;
+	sp->observations = ( indexMatched[ COLUMN_OBSERVATIONS ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_OBSERVATIONS ] ]->AsString : empty ;
 
-	sp->telephone = ( scoutMatched[ COLUMN_TELEPHONE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_TELEPHONE ] ]->AsString  : empty ;
+	sp->telephone = ( indexMatched[ COLUMN_TELEPHONE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_TELEPHONE ] ]->AsString  : empty ;
 
-	sp->celphone = ( scoutMatched[ COLUMN_CELPHONE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_CELPHONE ] ]->AsString  : empty ;
+	sp->celphone = ( indexMatched[ COLUMN_CELPHONE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_CELPHONE ] ]->AsString  : empty ;
 
-	sp->borndate = ( scoutMatched[ COLUMN_BORNDATE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_BORNDATE ] ]->AsString  : empty ;
+	sp->borndate = ( indexMatched[ COLUMN_BORNDATE ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_BORNDATE ] ]->AsString  : empty ;
 
-	sp->email = ( scoutMatched[ COLUMN_EMAIL ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_EMAIL ] ]->AsString  : empty ;
+	sp->email = ( indexMatched[ COLUMN_EMAIL ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_EMAIL ] ]->AsString  : empty ;
 
-	sp->activities = ( scoutMatched[ COLUMN_ACTIVITIES ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_ACTIVITIES ] ]->AsString  : empty ;
+	sp->activities = ( indexMatched[ COLUMN_ACTIVITIES ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_ACTIVITIES ] ]->AsString  : empty ;
 
-	sp->nacionality = ( scoutMatched[ COLUMN_NACIONALITY ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_NACIONALITY ] ]->AsString  : empty ;
+	sp->nacionality = ( indexMatched[ COLUMN_NACIONALITY ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_NACIONALITY ] ]->AsString  : empty ;
 
-	sp->languages = ( scoutMatched[ COLUMN_LANGUAGES ] != -1 ) ?
-		XLSQuery->Fields->Fields[ scoutMatched[ COLUMN_LANGUAGES ] ]->AsString  : empty ;
+	sp->languages = ( indexMatched[ COLUMN_LANGUAGES ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_LANGUAGES ] ]->AsString  : empty ;
 }
 
 //---------------------------------------------------------------------------
@@ -311,7 +460,7 @@ void TDM::loadCurrentScouting ( void )
 					map<AnsiString,AnsiString>::iterator found = columnsMatch->find ( t );
 					if ( found != columnsMatch->end() )
 					{
-						scoutMatched[ (*found).second ] = i;
+						indexMatched[ (*found).second ] = i;
 						++schema_match_count;
 					}
 					else
@@ -348,7 +497,7 @@ void TDM::loadCurrentScouting ( void )
 				schema_match_count = 0;
 			}
 		}
-		else
+		else if ( !analisis )
 		{
 			ScoutPerson* sp = new ScoutPerson();
 
@@ -448,20 +597,20 @@ void TDM::loadColumnsMatch ( void )
 
 void TDM::clearScoutColumnsMatched ( void )
 {
-	scoutMatched[COLUMN_CODE] 	      = -1;
-	scoutMatched[COLUMN_DATE] 	      = -1;
-	scoutMatched[COLUMN_NAME] 	      = -1;
-	scoutMatched[COLUMN_BORNDATE]     = -1;
-	scoutMatched[COLUMN_AGE]          = -1;
-	scoutMatched[COLUMN_TELEPHONE]    = -1;
-	scoutMatched[COLUMN_CELPHONE]     = -1;
-	scoutMatched[COLUMN_HEIGHT]       = -1;
-	scoutMatched[COLUMN_WEIGHT]       = -1;
-	scoutMatched[COLUMN_OBSERVATIONS] = -1;
-	scoutMatched[COLUMN_PLACE]        = -1;
-	scoutMatched[COLUMN_EMAIL]        = -1;
-	scoutMatched[COLUMN_ACTIVITIES]   = -1;
-	scoutMatched[COLUMN_NACIONALITY]  = -1;
-	scoutMatched[COLUMN_LANGUAGES]    = -1;
+	indexMatched[COLUMN_CODE] 	      = -1;
+	indexMatched[COLUMN_DATE] 	      = -1;
+	indexMatched[COLUMN_NAME] 	      = -1;
+	indexMatched[COLUMN_BORNDATE]     = -1;
+	indexMatched[COLUMN_AGE]          = -1;
+	indexMatched[COLUMN_TELEPHONE]    = -1;
+	indexMatched[COLUMN_CELPHONE]     = -1;
+	indexMatched[COLUMN_HEIGHT]       = -1;
+	indexMatched[COLUMN_WEIGHT]       = -1;
+	indexMatched[COLUMN_OBSERVATIONS] = -1;
+	indexMatched[COLUMN_PLACE]        = -1;
+	indexMatched[COLUMN_EMAIL]        = -1;
+	indexMatched[COLUMN_ACTIVITIES]   = -1;
+	indexMatched[COLUMN_NACIONALITY]  = -1;
+	indexMatched[COLUMN_LANGUAGES]    = -1;
 }
 
