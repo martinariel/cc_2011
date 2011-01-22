@@ -1,41 +1,53 @@
 # config/schema.yml
 # esquema de la base de datos para autogenerar classes
-# de acuerdo trunk/DB Schema/CC 20110110 1835.sql REV 7
-# -con modificaciones-
 #
 # @author Eric 
 # @orm Propel
-# @version 1.0
+# @version 1.1
 
 propel:
-  agencias:
+  agencia:
     id:           ~
     nombre:       { type: varchar(45), required: true, default: "" }
+    prioridad:    { type: tinyint, required: true, default: 0 }
     created_at:   ~
-  castings:
+  casting:
     id:           ~
     nombre:       { type: varchar(45), required: true, default: "" }
     anio:         { type: varchar(45), required: true, default: "" }
+    fecha:        { type: date }
+    estado:       { type: tinyint, default: -1 }
+    updated_at:    ~
     created_at:   ~
-  codigos_casting:
+  codigos_scouting:
     id:           ~
-    nombre:       { type: varchar(45), required: true, default: "" }
+    codigo:       { type: varchar(2), required: true }
+    descripcion:  { type: varchar(45), required: true, default: "" }
+    updated_at:    ~
+    created_at:   ~
   media:
     id:           ~
     archivo:      { type: varchar(45), required: true, default: "" }
     tipo:         { type: varchar(45), required: true, default: "" }
-    persona_id:   { type: integer, foreignTable: personas, foreignReference: id, default: 0 }
-    scouting_id:  { type: integer, foreignTable: scoutings, foreignReference: id, default: null }
-    casting_id:   { type: integer, foreignTable: castings, foreignReference: id, default: null }
+    persona_id:   { type: integer, foreignTable: persona, foreignReference: id, default: 0 }
+    personas_scouting_id:  { type: integer , default: -1 } 
+    personas_casting_id:   { type: integer, default: -1  }
     orden:        { type: integer, required: true, default: 0 }
     created_at:   ~
-  personas:
+  persona:
     id:           ~
     nombre:       { type: varchar(100), required: true, default: "" }
     fecha_nacimiento: { type: date, required: true, default: "0000-00-00" }
     peso:         { type: integer, required: true, default: 0 }
     altura:       { type: integer, required: true, default: 0 }
-    foto_principal: { type: varchar(45), default: null }
+    email:        { type: varchar(45) }
+    telefono:     { type: varchar(20) }
+    celular:      { type: varchar(20) }
+    calzado:      { type: varchar(20), default: -1 }
+    pantalon:     { type: varchar(20), default: -1 }
+    camisa:         { type: varchar(20), default: -1 }
+    observaciones:  { type: longvarchar }  
+    nacionalidad:   { type: integer, foreignTable: nacionalidad, foreignReference: id }
     created_at:   ~
     updated_at:   ~
   scout_import:
@@ -60,30 +72,59 @@ propel:
     mes:          { type: varchar(20), required: true, default: "" }
     codigo_agrupador: { type: varchar(45), required: true, default: "" }
     dia:          { type: varchar(45) , required: true, default: "" }
-  scoutings: 
+  scout_persona: 
     id:           ~
     anio:         { type: integer, required: true, default: 0 }
     id_codigo:    { type: integer, required: true, default: 0 }
     mes:          { type: integer, required: true, default: 0 }
     dia_contador: { type: integer, required: true, default: 0 }
     fecha:        { type: date, default: null }
-    persona_id:   { type: integer, foreignTable: personas, foreignReference: id, default: 0 }
-    telefono:     { type: varchar(45), required: true, default: "" }
-    celular:      { type: varchar(45), required: true, default: "" }
+    persona_id:   { type: integer, foreignTable: persona, foreignReference: id, default: 0 }
     peso:         { type: integer, required: true, default: 0 }
     altura:       { type: integer, required: true, default: 0 }
+    email:        { type: varchar(45) }
+    telefono:     { type: varchar(20) }
+    celular:      { type: varchar(20) }
+    actividades:  { type: varchar(255) }
     nombre_archivo_xls: { type: varchar(45), required: true, default: "" }
     observaciones: { type: varchar(255), required: true, default: "" }
+    lugar_id:     { type: integer, foreignTable: lugar, foreignReference: id, default: -1 }
     created_at:   ~
-  sinonimos:
+    updated_at:   ~
+  sinonimo:
     origen:       { type: varchar(50), required: true, default: "" }
     destino:      { type: varchar(55), required: true, default: "" }
-
-
-
-
-
-
-
+  lugar:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+    latitud:      { type: float, required: false, default: 0 }
+    longitud:     { type: float, required: false, default: 0 }
+  nacionalidad:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  lenguaje:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  persona_lenguaje:
+    persona_id:   ~
+    lenguaje_id:  ~
+  label:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  persona_label:
+    persona_id:   ~
+    label_id:     ~
+  usuario:
+    id: ~
+    username: { type: varchar(45), required: true }
+    password: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  grupo:
+    id: ~
+    nivel:  { type: tinyint }
+  grupo_usuario:
+     grupo_id: ~
+     usuario_id: ~
 
 
