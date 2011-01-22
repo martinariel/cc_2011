@@ -151,6 +151,8 @@ private:	// User declarations
 	// note: only first level, NOT recursive.
 	void loadMediaList   ( const AnsiString& path );
 
+	void loadMediaListRecursive ( const AnsiString& path , list<MediaFile*>* results );
+
 	// Attemps to open Hoja1 or Sheet1
 	void openXLSSheet ( void );
 

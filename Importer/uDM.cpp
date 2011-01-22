@@ -358,7 +358,6 @@ void TDM::matchAndLoadCast ( void )
 
 void TDM::loadCurrentCast ( void )
 {
-
 	if ( connectXLS ( currentXLS ) )
 	{
 		try
@@ -371,6 +370,8 @@ void TDM::loadCurrentCast ( void )
 				clearTable ( "cast_import" );
 				tCastImport->Open();
 			}
+
+			loadMediaList ( ExtractFilePath ( currentXLS ) );
 
 			matchAndLoadCast();
 
@@ -591,38 +592,11 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 
 void TDM::loadMediaList ( const AnsiString& path )
 {
-	TSearchRec sr;
 	clearMediaList();
 
 	log ( "   -  Cargando Media. " );
 
-	if ( FindFirst ( path + "\\*.*", faDirectory, sr) == 0)
-	{
-		do
-		{
-			if ( !isMediaFolder ( sr.Name ) )
-				continue;
-
-			TSearchRec srMedia;
-
-			if ( FindFirst ( path + "\\" + sr.Name + "\\*.*", faArchive, srMedia) == 0)
-			{
-				do
-				{
-					if ( isMediaFile ( srMedia.Name ) )
-					{
-						MediaFile* mf = new MediaFile();
-						mf->path = path + "\\" + sr.Name + "\\" + srMedia.Name;
-						mf->name = srMedia.Name;
-						mediaList->push_back( mf );
-					}
-				}
-				while ( FindNext(srMedia) == 0 );
-			}
-		}
-		while ( FindNext ( sr ) == 0 );
-		FindClose(sr);
-	}
+	loadMediaListRecursive ( path , mediaList );
 
 	// Terminamos de cargar la media list, ahora completamos los personcode utilizando la "regex"
 
@@ -635,6 +609,37 @@ void TDM::loadMediaList ( const AnsiString& path )
 	int size = mediaList->size();
 
 	log ( "        Cantidad Archivos:" + IntToStr ( size ) );
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::loadMediaListRecursive ( const AnsiString& path , list<MediaFile*>* results )
+{
+	TSearchRec sr;
+
+	if ( FindFirst ( path + "\\*.*", faAnyFile, sr) == 0)
+	{
+		do
+		{
+			if ( !isMediaFolder ( sr.Name ) )
+				continue;
+
+			if (  isMediaFile ( sr.Name ) && FileExists( path + "\\" + sr.Name ) )
+			{
+				MediaFile* mf = new MediaFile();
+				mf->path = path + "\\" + sr.Name + "\\" + sr.Name;
+				mf->name = sr.Name;
+				results->push_back( mf );
+			}
+			else if ( DirectoryExists( path + "\\" + sr.Name ) )
+			{
+				loadMediaListRecursive ( path + "\\" + sr.Name , results );
+			}
+		}
+		while ( FindNext ( sr ) == 0 );
+		FindClose(sr);
+	}
+
 }
 
 //---------------------------------------------------------------------------
