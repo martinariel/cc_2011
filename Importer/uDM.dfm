@@ -1,42 +1,41 @@
 object DM: TDM
   OldCreateOrder = False
-  OnCreate = DataModuleCreate
   OnDestroy = DataModuleDestroy
-  Height = 497
-  Width = 733
+  Height = 234
+  Width = 591
   object DWConnection: TADOConnection
+    Connected = True
     ConnectionString = 
-      'FILE NAME=C:\Users\mfernandez\Documents\CC1\CC\Importer\CCImport' +
-      'er.udl;'
+      'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
+      ' Source=cc;Initial Catalog=webapp;'
     LoginPrompt = False
-    Provider = 'MSDASQL.1'
-    Left = 48
-    Top = 56
+    Left = 40
+    Top = 24
   end
   object XLSConnection: TADOConnection
     LoginPrompt = False
-    Left = 168
-    Top = 56
+    Left = 128
+    Top = 24
   end
   object XLSQuery: TADOQuery
     Connection = XLSConnection
     Parameters = <>
-    Left = 272
-    Top = 56
+    Left = 216
+    Top = 24
   end
   object FTP: TIdFTP
     IPVersion = Id_IPv4
     ProxySettings.ProxyType = fpcmNone
     ProxySettings.Port = 0
-    Left = 360
-    Top = 56
+    Left = 296
+    Top = 24
   end
   object tSinonimos: TADOTable
     Connection = DWConnection
     CursorType = ctStatic
     TableName = 'sinonimos'
     Left = 48
-    Top = 152
+    Top = 104
     object tSinonimosORIGEN: TStringField
       FieldName = 'ORIGEN'
       Size = 50
@@ -51,7 +50,7 @@ object DM: TDM
     CursorType = ctStatic
     TableName = 'scout_import'
     Left = 144
-    Top = 152
+    Top = 112
     object tScoutImportID: TAutoIncField
       FieldName = 'ID'
       ReadOnly = True
@@ -145,7 +144,76 @@ object DM: TDM
     Request.Ranges.Units = 'bytes'
     Request.Ranges = <>
     HTTPOptions = [hoForceEncodeParams]
-    Left = 360
-    Top = 152
+    Left = 456
+    Top = 40
+  end
+  object tCastImport: TADOTable
+    Connection = DWConnection
+    CursorType = ctStatic
+    TableName = 'cast_import'
+    Left = 368
+    Top = 24
+    object tCastImportCODIGO: TIntegerField
+      FieldName = 'CODIGO'
+    end
+    object tCastImportNOMBRE: TStringField
+      FieldName = 'NOMBRE'
+      Size = 100
+    end
+    object tCastImportAGENCIA: TStringField
+      FieldName = 'AGENCIA'
+      Size = 45
+    end
+    object tCastImportPANTALON: TStringField
+      FieldName = 'PANTALON'
+      Size = 45
+    end
+    object tCastImportCAMISA: TStringField
+      FieldName = 'CAMISA'
+      Size = 45
+    end
+    object tCastImportCALZADO: TIntegerField
+      FieldName = 'CALZADO'
+    end
+    object tCastImportALTURA: TIntegerField
+      FieldName = 'ALTURA'
+    end
+    object tCastImportPESO: TIntegerField
+      FieldName = 'PESO'
+    end
+    object tCastImportFECHA_NACIMIENTO: TStringField
+      FieldName = 'FECHA_NACIMIENTO'
+      Size = 45
+    end
+    object tCastImportFECHA_CASTING: TStringField
+      FieldName = 'FECHA_CASTING'
+      Size = 45
+    end
+    object tCastImportCASTING: TStringField
+      FieldName = 'CASTING'
+      Size = 45
+    end
+    object tCastImportANIO: TIntegerField
+      FieldName = 'ANIO'
+    end
+    object tCastImportMEDIDAS: TStringField
+      FieldName = 'MEDIDAS'
+      Size = 45
+    end
+    object tCastImportDNI: TStringField
+      FieldName = 'DNI'
+      Size = 45
+    end
+    object tCastImportOBSERVACIONES: TStringField
+      FieldName = 'OBSERVACIONES'
+      Size = 45
+    end
+    object tCastImportEDAD: TIntegerField
+      FieldName = 'EDAD'
+    end
+    object tCastImportDIA: TStringField
+      FieldName = 'DIA'
+      Size = 45
+    end
   end
 end

@@ -17,6 +17,7 @@
 #include <PlatformDefaultStyleActnCtrls.hpp>
 #include <RibbonObsidianStyleActnCtrls.hpp>
 #include <Dialogs.hpp>
+#include "uFrmFolder.h"
 //---------------------------------------------------------------------------
 class TFormMain : public TForm
 {

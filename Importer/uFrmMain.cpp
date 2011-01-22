@@ -18,48 +18,72 @@ __fastcall TFormMain::TFormMain(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::acAnalizarScoutExecute(TObject *Sender)
 {
-	//
-	DM->setAnalisis(true);
-	DM->iterateScouting ( "G:\\01 importacion masiva de datos\\01 scouting");
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( "  SCOUTING: Analisis de archivos finalizado.");
-	DM->log ( "   VERIFIQUE LOS ARCHIVOS CCImporter.error.log y CCImporter.scout_not_match " );
+	FrmFolder->Caption = "Seleccione el directorio de Scouting ... ";
+	if ( FrmFolder->ShowModal() == mrOk )
+	{
+
+		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+		DM->setAnalisis(true);
+		DM->iterateScouting (folder);
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( "  SCOUTING: Analisis de archivos finalizado.");
+		DM->log ( "   VERIFIQUE LOS ARCHIVOS CCImporter.error.log y CCImporter.scout_not_match " );
+	}
+
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TFormMain::acImportarArchivosExecute(TObject *Sender)
 {
-	DM->setAnalisis(false);
-	DM->iterateScouting ( "G:\\01 importacion masiva de datos\\01 scouting");
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( "  SCOUTING: Carga masiva finalizada.");
+
+	FrmFolder->Caption = "Seleccione el directorio de Scouting ... ";
+	if ( FrmFolder->ShowModal() == mrOk )
+	{
+
+		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+
+		DM->setAnalisis(false);
+		DM->iterateScouting ( folder );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( "  SCOUTING: Carga masiva finalizada.");
+	}
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TFormMain::acAnalizarCastingExecute(TObject *Sender)
 {
-	DM->setAnalisis(true);
-	DM->iterateCasting ( "G:\\01 importacion masiva de datos\\02 casting");
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( "  CASTING: Analisis de archivos finalizado.");
-	DM->log ( "   VERIFIQUE LOS ARCHIVOS CCImporter.error.log y CCImporter.cast_not_match " );
+	FrmFolder->Caption = "Seleccione el directorio de Casting ... ";
+	if ( FrmFolder->ShowModal() == mrOk )
+	{
+		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+		DM->setAnalisis(true);
+		DM->iterateCasting ( folder );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( "  CASTING: Analisis de archivos finalizado.");
+		DM->log ( "   VERIFIQUE LOS ARCHIVOS CCImporter.error.log y CCImporter.cast_not_match " );
+	}
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TFormMain::acImportarCastingExecute(TObject *Sender)
 {
-	DM->setAnalisis(false);
-	DM->iterateCasting ( "G:\\01 importacion masiva de datos\\02 casting");
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
-	DM->log ( "  CASTING: Carga masiva finalizada.");
+	FrmFolder->Caption = "Seleccione el directorio de Casting ... ";
+	if ( FrmFolder->ShowModal() == mrOk )
+	{
+		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+		DM->setAnalisis(false);
+		DM->iterateCasting ( folder );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
+		DM->log ( "  CASTING: Carga masiva finalizada.");
+	}
 }
 //---------------------------------------------------------------------------
 

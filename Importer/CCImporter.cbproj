@@ -64,6 +64,10 @@
 			<TASM_Debugging>None</TASM_Debugging>
 		</PropertyGroup>
 		<ItemGroup>
+			<CppCompile Include="CastPerson.cpp">
+				<DependentOn>CastPerson.h</DependentOn>
+				<BuildOrder>6</BuildOrder>
+			</CppCompile>
 			<CppCompile Include="CCImporter.cpp">
 				<BuildOrder>0</BuildOrder>
 			</CppCompile>
