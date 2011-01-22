@@ -3,7 +3,7 @@
 #
 # @author Eric 
 # @orm Propel
-# @version 1.2
+# @version 2.0
 
 propel:
   agencia:
@@ -23,7 +23,7 @@ propel:
     id:           ~
     codigo:       { type: varchar(2), required: true }
     descripcion:  { type: varchar(45), required: true, default: "" }
-    updated_at:    ~
+    updated_at:   ~
     created_at:   ~
   media:
     id:           ~
@@ -34,9 +34,24 @@ propel:
     personas_casting_id:   { type: integer, default: -1  }
     orden:        { type: integer, required: true, default: 0 }
     created_at:   ~
+  persona_casting:
+    persona_id:     ~
+    casting_id:     ~
+    peso:           { type: integer, required: true, default: 0 }
+    altura:         { type: integer, required: true, default: 0 }
+    email:          { type: varchar(45) }
+    telefono:       { type: varchar(20) }
+    celular:        { type: varchar(20) }
+    calzado:        { type: varchar(20), default: -1 }
+    pantalon:       { type: varchar(20), default: -1 }
+    camisa:         { type: varchar(20), default: -1 }
+    observaciones:  { type: longvarchar }  
+    updated_at:   ~
+    created_at:   ~
   persona:
     id:           ~
     nombre:       { type: varchar(100), required: true, default: "" }
+    dni:          { type: varchar(20), required: true, default: 0 }
     fecha_nacimiento: { type: date, required: true, default: "0000-00-00" }
     sexo:         { type: varchar(1), required: true, default: "X" }
     peso:         { type: integer, required: true, default: 0 }
@@ -50,7 +65,6 @@ propel:
     observaciones:  { type: longvarchar }  
     nacionalidad:   { type: integer, foreignTable: nacionalidad, foreignReference: id }
     created_at:   ~
-    updated_at:   ~
   scout_import:
     id:           ~
     codigo:       { type: integer, required: true, default: 0 }
@@ -73,7 +87,7 @@ propel:
     mes:          { type: varchar(20), required: true, default: "" }
     codigo_agrupador: { type: varchar(45), required: true, default: "" }
     dia:          { type: varchar(45) , required: true, default: "" }
-  scout_persona: 
+  persona_scouting: 
     id:           ~
     anio:         { type: integer, required: true, default: 0 }
     id_codigo:    { type: integer, required: true, default: 0 }
@@ -87,11 +101,30 @@ propel:
     telefono:     { type: varchar(20) }
     celular:      { type: varchar(20) }
     actividades:  { type: varchar(255) }
-    nombre_archivo_xls: { type: varchar(45), required: true, default: "" }
     observaciones: { type: varchar(255), required: true, default: "" }
     lugar_id:     { type: integer, foreignTable: lugar, foreignReference: id, default: -1 }
     created_at:   ~
     updated_at:   ~
+  cast_import:
+    codigo: { type: integer }
+    nombre: { type: varchar(100) }
+    agencia: { type: varchar(45) }
+    pantalon: { type: varchar(45) }
+    camisa: { type: varchar(45) }    
+    calzado: { type: integer }
+    altura: { type: integer }
+    peso: { type: integer }
+    fecha_nacimiento: { type: varchar(45) }
+    fecha_casting: { type: varchar(45) }
+    casting: { type: varchar(45) }
+    anio: { type: integer  }
+    medidas: { type: varchar(45) }
+    dni: { type: varchar(45) }
+    observaciones: { type: longvarchar }
+    edad: { type: integer }
+    dia: { type: varchar(45) }
+  sinonimo_tabla:
+    tabla: { type: varchar(45) }
   sinonimo:
     origen:       { type: varchar(50), required: true, default: "" }
     destino:      { type: varchar(55), required: true, default: "" }
