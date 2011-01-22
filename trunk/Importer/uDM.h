@@ -77,8 +77,24 @@ __published:	// IDE-managed Components
 	TStringField *tScoutImportCODIGO_AGRUPADOR;
 	TStringField *tScoutImportDIA;
 	TIdHTTP *HTTP;
-
-	void __fastcall DataModuleCreate(TObject *Sender);
+	TADOTable *tCastImport;
+	TIntegerField *tCastImportCODIGO;
+	TStringField *tCastImportNOMBRE;
+	TStringField *tCastImportAGENCIA;
+	TStringField *tCastImportPANTALON;
+	TStringField *tCastImportCAMISA;
+	TIntegerField *tCastImportCALZADO;
+	TIntegerField *tCastImportALTURA;
+	TIntegerField *tCastImportPESO;
+	TStringField *tCastImportFECHA_NACIMIENTO;
+	TStringField *tCastImportFECHA_CASTING;
+	TStringField *tCastImportCASTING;
+	TIntegerField *tCastImportANIO;
+	TStringField *tCastImportMEDIDAS;
+	TStringField *tCastImportDNI;
+	TStringField *tCastImportOBSERVACIONES;
+	TIntegerField *tCastImportEDAD;
+	TStringField *tCastImportDIA;
 	void __fastcall DataModuleDestroy(TObject *Sender);
 
 private:	// User declarations
@@ -99,6 +115,10 @@ private:	// User declarations
 	list<MediaFile*>* mediaList;
 
 	map<AnsiString,AnsiString>* columnsMatch;
+	map<AnsiString,bool>* tablesMatch;
+
+	TStringList* foundedTables;
+
 	map<AnsiString,int> indexMatched;
 	AnsiString currentXLS;
 
@@ -111,18 +131,50 @@ private:	// User declarations
 
 	void clearMediaList( void );
 
-	bool connectXLS      ( const AnsiString& fileName  );
+	// Reads a Column in the XLS File as String
+	AnsiString mapString ( const AnsiString& Column , const AnsiString& defaultValue = "" );
+
+	// Reads a Column in the XLS File as Integer
+	int mapInteger ( const AnsiString& Column , int defaultValue = -1 );
+
+	// Attemps to read a Column in the xls file as DD/MM/YYYY sTRING Date.
+	AnsiString mapDate ( const AnsiString& Column );
+
+	// Returns in schema_match_count the number of columns the could be matched in the
+	// current row.
+    void matchColumns ( int* schema_match_count, list<AnsiString>* notMatchedColumns );
+
+	// Connects XLSConnection to fileName
+	bool connectXLS ( const AnsiString& fileName  );
+
+	// Loads into the medialist all the media files in the current directory and subdirectories
+	// note: only first level, NOT recursive.
 	void loadMediaList   ( const AnsiString& path );
 
-	void loadCurrentScouting ( void );
-	void loadCurrentCast ( void );
+	// Attemps to open Hoja1 or Sheet1
+	void openXLSSheet ( void );
 
+	// Opens the Datasheet by scaning all and matching with the sinonimes.
+	void openXLSSheetBySinomy ( void );
+
+	// Loads the currentXLS as a Scouting file
+	void loadCurrentScouting ( void );
+
+	// Loads the currentXLS as a Casting file
+	void loadCurrentCast ( void );
+    void matchAndLoadCast ( void );
+
+	// Extracts the first integer in a string
 	int extractPersonCode ( const AnsiString& fullString );
 
+	// Checks if a folder name is a media valid folder.
 	bool isMediaFolder ( const AnsiString& name );
+
+	// Checks if a file (by extension) is a valid media file.
 	bool isMediaFile   ( const AnsiString& name );
 
 	void loadColumnsMatch ( void );
+	void loadTablesMatch ( void );
 
 	void clearScoutColumnsMatched ( void );
 
@@ -130,7 +182,7 @@ private:	// User declarations
 	void saveScoutPerson ( ScoutPerson* sp );
 
 	void mapCastPerson ( CastPerson* cp );
-	void saveScoutPerson ( CastPerson* cp );
+	void saveCastPerson ( CastPerson* cp );
 
 	void clearTable ( const AnsiString& tableName );
 
@@ -143,6 +195,8 @@ private:	// User declarations
 
 	bool isDayFolder ( const AnsiString& name );
 
+
+
 public:
 
 	// User declarations
@@ -153,8 +207,6 @@ public:
 
 	void log ( const AnsiString& msg );
 	void setLogMemo ( TMemo* memo );
-
-
 
 	// Carga los datos de scouting a partir del path raiz.
 	//

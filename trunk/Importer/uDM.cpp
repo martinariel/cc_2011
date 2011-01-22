@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
+#include <DateUtils.hpp>
 #pragma hdrstop
 
 #include "uDM.h"
@@ -12,44 +13,44 @@ TDM *DM;
 __fastcall TDM::TDM(TComponent* Owner)
 	: TDataModule(Owner)
 {
-}
-//---------------------------------------------------------------------------
-void __fastcall TDM::DataModuleCreate(TObject *Sender)
-{
 	TIniFile* ini = new TIniFile ( ChangeFileExt ( Application->ExeName , ".ini" ) );
 
-
 	// WEB SETTINGS
-	urlCastProcess  = ini->ReadString ("WEB" , "CAST" , "http://localhost/cc/webApp/load_cast.php");
-	urlScoutProcess = ini->ReadString ("WEB", "SCOUT" , "http://localhost/cc/webApp/load_scout.php");
+
+	urlCastProcess  = ini->ReadString ("WEB" , "CAST"   , "http://localhost/cc/webApp/load_cast.php"  );
+	urlScoutProcess = ini->ReadString ("WEB" , "SCOUT"  , "http://localhost/cc/webApp/load_scout.php" );
 
 	// FTP SETTINGS
 
-	ftpServer = ini->ReadString ( "FTP" , "SERVER" , "LOCALHOST" );
-	ftpServer = ini->ReadString ( "FTP" , "USER"   , "ROOT" );
-	ftpServer = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT" );
+	ftpServer   = ini->ReadString ( "FTP" , "SERVER"   , "LOCALHOST" );
+	ftpUser     = ini->ReadString ( "FTP" , "USER"     , "ROOT" );
+	ftpPassword = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT" );
 
-	DWConnection->ConnectionString = "FILE NAME=" + ChangeFileExt(Application->ExeName, ".udl" );
+	//DWConnection->ConnectionString = "FILE NAME=" + ChangeFileExt(Application->ExeName, ".udl" );
 	DWConnection->Open();
 
-	mediaList = new list<MediaFile*>();
-	columnsMatch = new map<AnsiString,AnsiString>();
+	mediaList     = new list<MediaFile*>();
+	columnsMatch  = new map<AnsiString,AnsiString>();
+	tablesMatch   = new map<AnsiString,bool>();
+	foundedTables = new TStringList();
 
 	loadColumnsMatch();
+	loadTablesMatch();
 
 	analisis = false;
 
 	delete ini;
-
 }
-
 //---------------------------------------------------------------------------
 void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 {
 	DWConnection->Close();
 	clearMediaList();
+
 	delete mediaList;
 	delete columnsMatch;
+	delete tablesMatch;
+	delete foundedTables;
 }
 //---------------------------------------------------------------------------
 
@@ -60,7 +61,9 @@ bool TDM::connectXLS ( const AnsiString& fileName )
 		if ( XLSConnection->Connected )
 			XLSConnection->Close();
 
-		XLSConnection->ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fileName + ";Extended Properties='Excel 8.0;HDR=NO;IMEX=1'";
+		XLSConnection->ConnectionString = "Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" +
+										  fileName + ";Extended Properties='Excel 8.0;HDR=NO;IMEX=1'";
+
 		XLSConnection->Open();
 
 		return true;
@@ -72,6 +75,7 @@ bool TDM::connectXLS ( const AnsiString& fileName )
 }
 
 //---------------------------------------------------------------------------
+
 void TDM::setAnalisis ( bool value )
 {
 	this->analisis = value;
@@ -131,6 +135,18 @@ void TDM::uploadMediaList ( void )
 
 //---------------------------------------------------------------------------
 
+void TDM::notifyCastLoad ( void )
+{
+	if ( analisis )
+		return;
+
+	log ( "   -  Match de personas. " );
+
+	HTTP->Get( urlCastProcess );
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::notifyScoutLoad ( void )
 {
 	if ( analisis )
@@ -155,6 +171,228 @@ bool TDM::isDayFolder ( const AnsiString& name )
 
 			)
 	);
+}
+
+//---------------------------------------------------------------------------
+
+AnsiString TDM::mapString ( const AnsiString& Column , const AnsiString& defaultValue )
+{
+	return ( indexMatched[ Column ] != -1 ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ Column ] ]->AsString  : (UnicodeString)defaultValue ;
+}
+
+//---------------------------------------------------------------------------
+
+int TDM::mapInteger ( const AnsiString& Column , int defaultValue )
+{
+	return ( indexMatched[ Column ] != -1 ) ?
+		StrToIntDef ( XLSQuery->Fields->Fields[ indexMatched[ Column    ] ]->AsString , defaultValue ) : defaultValue;
+}
+
+//---------------------------------------------------------------------------
+
+AnsiString TDM::mapDate ( const AnsiString& Column )
+{
+	int matchColumn = indexMatched [Column];
+	if ( matchColumn == -1 )
+		return "";
+	else
+	{
+		AnsiString dt = mapString ( Column );
+
+		if ( !dt.IsEmpty() && IsNumeric ( dt ) )
+		{
+			TDateTime td = EncodeDate ( 1900, 1 , 1 );
+
+			int days = StrToIntDef ( dt , 1 );
+
+			td = IncDay ( td , days - 2 );
+
+			dt = FormatDateTime ( "dd/mm/yyyy" , td );
+		}
+
+		return dt;
+
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::mapCastPerson ( CastPerson* sp )
+{
+	sp->code   = mapInteger ( COLUMN_CODE );
+	sp->age    = mapInteger ( COLUMN_AGE );
+	sp->weight = mapInteger ( COLUMN_WEIGHT );
+
+	AnsiString t = ( indexMatched[ COLUMN_HEIGHT ] != -1  ) ?
+		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_HEIGHT ] ]->AsString :
+		(UnicodeString) "-1" ;
+
+	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
+
+	//sp->date =
+
+	sp->name 		 = mapString  ( COLUMN_NAME );
+	sp->shirtSize 	 = mapString  ( COLUMN_SHIRT_SIZE );
+	sp->observations = mapString  ( COLUMN_OBSERVATIONS );
+	sp->telephone 	 = mapString  ( COLUMN_TELEPHONE );
+	sp->celphone 	 = mapString  ( COLUMN_CELPHONE );
+	sp->birthday 	 = mapDate    ( COLUMN_BORNDATE );
+	sp->document 	 = mapString  ( COLUMN_DOCUMENT );
+	sp->pantsSize    = mapString  ( COLUMN_PANTS_SIZE );
+	sp->sizes 		 = mapString  ( COLUMN_SIZES );
+	sp->shoeSize     = mapInteger ( COLUMN_SHOE_SIZE );
+	sp->agency       = mapString  ( COLUMN_AGENCY );
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::saveCastPerson ( CastPerson* sp )
+{
+
+	if ( analisis )
+		return;
+
+	tCastImport->Append();
+
+	tCastImportAGENCIA->Value = sp->agency;
+	tCastImportALTURA->Value  = sp->height;
+	tCastImportANIO->Value    = StrToIntDef ( anio , -1 );
+	tCastImportCALZADO->Value = sp->shoeSize;
+	tCastImportCAMISA->Value  = sp->shirtSize;
+	tCastImportCASTING->Value = codigo;
+	tCastImportCODIGO->Value  = sp->code;
+	tCastImportDNI->Value     = sp->document;
+	tCastImportEDAD->Value    = sp->age;
+
+	tCastImportFECHA_CASTING->Value    = sp->date;
+	tCastImportFECHA_NACIMIENTO->Value = sp->birthday;
+	tCastImportMEDIDAS->Value          = sp->sizes;
+	tCastImportNOMBRE->Value           = sp->name;
+	tCastImportOBSERVACIONES->Value    = sp->observations;
+	tCastImportPANTALON->Value         = sp->pantsSize;
+	tCastImportPESO->Value             = sp->weight;
+	tCastImportDIA->Value              = dia;
+
+	tCastImport->Post();
+
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::matchAndLoadCast ( void )
+{
+	#ifdef DEBUG_TO_DISC
+	ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".cast_not_match" ).c_str() , ios::app );
+	ofstream mediaListLog  ( ChangeFileExt(Application->ExeName, ".media_list"      ).c_str() , ios::app );
+	#endif
+
+	clearScoutColumnsMatched();
+
+	bool f_schema = false;
+	int schema_match_count = 0;
+	list<AnsiString>* notMatchedColumns = new list<AnsiString>();
+
+	AnsiString t;
+
+	while ( !XLSQuery->Eof )
+	{
+		if ( !f_schema )
+		{
+			matchColumns ( &schema_match_count , notMatchedColumns );
+
+			if ( !f_schema && schema_match_count > 4 )
+			{
+				f_schema = true;
+
+				#ifdef DEBUG_TO_DISC
+				//Output the non-matched columns to disk
+				if ( notMatchedColumns->size() > 0 )
+				{
+					notMatchedLog << currentXLS.c_str() << "  -------------------------------------------- " << std::endl;
+
+					for ( list<AnsiString>::const_iterator it = notMatchedColumns->begin() ; it != notMatchedColumns->end() ; ++it )
+						notMatchedLog << (*it).c_str() << std::endl;
+				}
+
+				// Output the medialist to disc
+				mediaListLog << currentXLS.c_str() << "  ---------------------------------------------------- " << std::endl;
+				mediaListLog << "Size: " << mediaList->size() << std::endl;
+				for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+					mediaListLog << (*it)->code << " = " << (*it)->name.c_str() << std::endl;
+				#endif
+			}
+			else
+			{
+				clearScoutColumnsMatched();
+				schema_match_count = 0;
+			}
+		}
+		else if ( !analisis )
+		{
+			CastPerson* sp = new CastPerson();
+
+			// Get the values
+			mapCastPerson ( sp );
+
+			if ( sp->code > 0 )
+				saveCastPerson( sp );
+
+			delete sp;
+		}
+
+		XLSQuery->Next();
+	}
+
+	#ifdef DEBUG_TO_DISC
+	notMatchedLog.close();
+	mediaListLog.close();
+	#endif
+
+	XLSQuery->Close();
+
+	delete notMatchedColumns;
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::loadCurrentCast ( void )
+{
+
+	if ( connectXLS ( currentXLS ) )
+	{
+		try
+		{
+			openXLSSheet();
+
+			if ( !analisis )
+			{
+				log ( "VACIANDO TABLA DE PROCESO." );
+				clearTable ( "cast_import" );
+				tCastImport->Open();
+			}
+
+			matchAndLoadCast();
+
+			uploadMediaList();
+
+			XLSConnection->Close();
+
+			if ( !analisis )
+				tCastImport->Close();
+
+			notifyCastLoad();
+
+		}
+		catch ( ... )
+		{
+			log ( "ERROR" );
+		}
+	}
+	else
+	{
+		log ( " ERROR al conectarse a: " + currentXLS );
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -220,7 +458,8 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 					currentXLS =  path + "\\" + sr.Name + "\\" + srAux.Name;
 					//log ( "DIA op1: " + currentXLS );
 
-					// TODO: Load current XLS
+					// Load current XLS
+					loadCurrentCast();
 
 					dayFound = true;
 				}
@@ -235,9 +474,10 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 
 						dayFound = true;
 
-						log ( "DIA op2: " + currentXLS );
+						//log ( "DIA op2: " + currentXLS );
 
-						// TODO: Load current XLS
+						// Load current XLS
+						loadCurrentCast();
 					}
 				}
 				FindClose ( srAux );
@@ -252,11 +492,11 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 			if ( FindFirst ( path + "\\*.xls" , faArchive , sr ) == 0 )
 			{
 
-				log ( "SIN DIAS: " + path + sr.Name );
+				//log ( "SIN DIAS: " + path + sr.Name );
 				currentXLS =  path + "\\" + sr.Name;
 
-				//TODO: load current XLS
-
+				// load current XLS
+				loadCurrentCast();
 			}
 			else
 			{
@@ -316,7 +556,7 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 					if ( !analisis )
 					{
 						log ( "   -  Limpiando tabla de proceso. " );
-						clearTable("SCOUT_IMPORT");
+						clearTable("scout_import");
 						tScoutImport->Open();
 					}
 
@@ -327,13 +567,13 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 					//5 - subida FTP
 					uploadMediaList();
 
-					//6 - Notifico a la aplicación web para que procese.
-                    notifyScoutLoad();
-
 					if ( !analisis )
 						tScoutImport->Close();
 
 					XLSConnection->Close();
+
+					//6 - Notifico a la aplicación web para que procese.
+					notifyScoutLoad();
 				}
 				catch (...)
 				{
@@ -449,54 +689,88 @@ void TDM::mapScoutPerson ( ScoutPerson* sp )
 	sp->code = ( indexMatched[ COLUMN_CODE ] != -1 ) ?
 				extractPersonCode ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_CODE ] ]->AsString )  : -1;
 
-	sp->age    = ( indexMatched[ COLUMN_AGE ] != -1 ) ?
-		StrToIntDef ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_AGE    ] ]->AsString , -1 ) : -1;
-
-	sp->weight = ( indexMatched[ COLUMN_WEIGHT ] != -1  ) ?
-		StrToIntDef ( XLSQuery->Fields->Fields[ indexMatched[ COLUMN_WEIGHT ] ]->AsString , -1 ) : -1;
+	sp->age    = mapInteger ( COLUMN_AGE );
+	sp->weight = mapInteger ( COLUMN_WEIGHT );
 
 	t = ( indexMatched[ COLUMN_HEIGHT ] != -1  ) ?
 		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_HEIGHT ] ]->AsString : (UnicodeString) "-1" ;
 
 	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
 
-	sp->date = ( indexMatched[ COLUMN_DATE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_DATE ] ]->AsString  : empty ;
-
-	sp->name = ( indexMatched[ COLUMN_NAME ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_NAME ] ]->AsString  : empty ;
-
-	sp->place = ( indexMatched[ COLUMN_PLACE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_PLACE ] ]->AsString  : empty ;
-
-	sp->observations = ( indexMatched[ COLUMN_OBSERVATIONS ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_OBSERVATIONS ] ]->AsString : empty ;
-
-	sp->telephone = ( indexMatched[ COLUMN_TELEPHONE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_TELEPHONE ] ]->AsString  : empty ;
-
-	sp->celphone = ( indexMatched[ COLUMN_CELPHONE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_CELPHONE ] ]->AsString  : empty ;
-
-	sp->borndate = ( indexMatched[ COLUMN_BORNDATE ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_BORNDATE ] ]->AsString  : empty ;
-
-	sp->email = ( indexMatched[ COLUMN_EMAIL ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_EMAIL ] ]->AsString  : empty ;
-
-	sp->activities = ( indexMatched[ COLUMN_ACTIVITIES ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_ACTIVITIES ] ]->AsString  : empty ;
-
-	sp->nacionality = ( indexMatched[ COLUMN_NACIONALITY ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_NACIONALITY ] ]->AsString  : empty ;
-
-	sp->languages = ( indexMatched[ COLUMN_LANGUAGES ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ COLUMN_LANGUAGES ] ]->AsString  : empty ;
+	sp->date         = mapString ( COLUMN_DATE );
+	sp->name         = mapString ( COLUMN_NAME );
+	sp->place        = mapString ( COLUMN_PLACE );
+	sp->observations = mapString ( COLUMN_OBSERVATIONS );
+	sp->telephone    = mapString ( COLUMN_TELEPHONE );
+	sp->celphone     = mapString ( COLUMN_CELPHONE );
+	sp->borndate     = mapString ( COLUMN_BORNDATE );
+	sp->email        = mapString ( COLUMN_EMAIL );
+	sp->activities   = mapString ( COLUMN_ACTIVITIES );
+	sp->nacionality  = mapString ( COLUMN_NACIONALITY );
+	sp->languages    = mapString ( COLUMN_LANGUAGES );
 }
 
 //---------------------------------------------------------------------------
 
-void TDM::loadCurrentScouting ( void )
+void TDM::openXLSSheetBySinomy ( void )
+{
+
+	foundedTables->Clear();
+
+	XLSConnection->GetTableNames(foundedTables);
+
+	bool found = false;
+	AnsiString tableName;
+
+	if ( foundedTables->Count == 1 )
+	{
+		found = true;
+		tableName = UpperCase ( Trim ( foundedTables->Strings[0] ) );
+
+	}
+	else
+	{
+		for ( int i = 0 ; i < foundedTables->Count ; i++ )
+		{
+			tableName = UpperCase( Trim (  foundedTables->Strings[i] ));
+			// Search in the map
+			map<AnsiString,bool>::const_iterator it = tablesMatch->find ( tableName );
+			found = it != tablesMatch->end();
+			if ( found ) break;
+		}
+	}
+
+	if ( found )
+	{
+		XLSQuery->SQL->Text = "Select * from ["+tableName+"]";
+		XLSQuery->Open();
+	}
+	else
+	{
+		log ( "ERROR: Hoja de calculo no encontrada, " + currentXLS );
+
+		#ifdef DEBUG_TO_DISC
+		ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".tables_not_match" ).c_str() , ios::app );
+
+		notMatchedLog << currentXLS.c_str() << std::endl;
+
+		for ( int i = 0 ; i < foundedTables->Count ; i++ )
+		{
+			tableName = foundedTables->Strings[i];
+			notMatchedLog << tableName.c_str() << std::endl;
+		}
+		notMatchedLog.close();
+
+		#endif
+
+		throw new EConvertError ( "Sin match de tabla" );
+
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::openXLSSheet ( void )
 {
 	if ( XLSQuery->Active )
 		XLSQuery->Close();
@@ -509,10 +783,54 @@ void TDM::loadCurrentScouting ( void )
 	}
 	catch ( ... )
 	{
-		XLSQuery->SQL->Text = "Select * from [Sheet1$]";
-		XLSQuery->Open();
-	}
 
+		try
+		{
+			XLSQuery->SQL->Text = "Select * from [Sheet1$]";
+			XLSQuery->Open();
+		}
+		catch ( ... )
+		{
+			// intento por sinonimos de hojas de xls, motherfuckers!
+			openXLSSheetBySinomy ();
+		}
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::matchColumns ( int* schema_match_count, list<AnsiString>* notMatchedColumns )
+{
+	AnsiString t;
+
+	for ( int i = 0 ; i < XLSQuery->FieldCount ; i++ )
+	{
+		t = XLSQuery->Fields->Fields[i]->AsString;
+
+		if ( t != NULL && !t.IsEmpty() )
+		{
+			t = Trim( UpperCase(t) );
+			t = StringReplace ( t , "  " , " " , TReplaceFlags() << rfReplaceAll );
+
+			map<AnsiString,AnsiString>::iterator found = columnsMatch->find ( t );
+			if ( found != columnsMatch->end() )
+			{
+				indexMatched[ (*found).second ] = i;
+				++(*schema_match_count);
+			}
+			else
+			{
+				notMatchedColumns->push_back( t );
+			}
+		}
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::loadCurrentScouting ( void )
+{
+	 openXLSSheet();
 
 	#ifdef DEBUG_TO_DISC
 	ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".scout_not_match" ).c_str() , ios::app );
@@ -531,27 +849,8 @@ void TDM::loadCurrentScouting ( void )
 	{
 		if ( !f_schema )
 		{
-			for ( int i = 0 ; i < XLSQuery->FieldCount ; i++ )
-			{
-				t = XLSQuery->Fields->Fields[i]->AsString;
 
-				if ( t != NULL && !t.IsEmpty() )
-				{
-					t = Trim( UpperCase(t) );
-					t = StringReplace ( t , "  " , " " , TReplaceFlags() << rfReplaceAll );
-
-					map<AnsiString,AnsiString>::iterator found = columnsMatch->find ( t );
-					if ( found != columnsMatch->end() )
-					{
-						indexMatched[ (*found).second ] = i;
-						++schema_match_count;
-					}
-					else
-					{
-						notMatchedColumns->push_back( t );
-					}
-				}
-			}
+			matchColumns ( &schema_match_count , notMatchedColumns );
 
 			if ( !f_schema && schema_match_count > 4 )
 			{
@@ -593,9 +892,7 @@ void TDM::loadCurrentScouting ( void )
 			delete sp;
 
 		}
-
 		XLSQuery->Next();
-
 	}
 
 	#ifdef DEBUG_TO_DISC
@@ -662,6 +959,17 @@ int TDM::extractPersonCode ( const AnsiString& fullString )
 
 //---------------------------------------------------------------------------
 
+void TDM::loadTablesMatch ( void )
+{
+	// SINONIMOS DE TABLAS ( Hojas de calculo XLS )
+	map<AnsiString,bool>& M = *tablesMatch;
+
+	M["'LISTA PARA CONVOCAR$'"] = true;
+
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::loadColumnsMatch ( void )
 {
 	// SINONIMOS DE COLUMNAS.
@@ -695,5 +1003,12 @@ void TDM::clearScoutColumnsMatched ( void )
 	indexMatched[COLUMN_ACTIVITIES]   = -1;
 	indexMatched[COLUMN_NACIONALITY]  = -1;
 	indexMatched[COLUMN_LANGUAGES]    = -1;
+	indexMatched[COLUMN_SHIRT_SIZE]   = -1;
+	indexMatched[COLUMN_SHOE_SIZE]    = -1;
+	indexMatched[COLUMN_PANTS_SIZE]   = -1;
+	indexMatched[COLUMN_DOCUMENT]     = -1;
+	indexMatched[COLUMN_AGENCY]       = -1;
+	indexMatched[COLUMN_SIZES]        = -1;
 }
+
 
