@@ -255,24 +255,24 @@ void TDM::saveCastPerson ( CastPerson* sp )
 
 	tCastImport->Append();
 
-	tCastImportAGENCIA->Value = sp->agency;
-	tCastImportALTURA->Value  = sp->height;
-	tCastImportANIO->Value    = StrToIntDef ( anio , -1 );
-	tCastImportCALZADO->Value = sp->shoeSize;
-	tCastImportCAMISA->Value  = sp->shirtSize;
-	tCastImportCASTING->Value = codigo;
-	tCastImportCODIGO->Value  = sp->code;
-	tCastImportDNI->Value     = sp->document;
-	tCastImportEDAD->Value    = sp->age;
+	tCastImportagencia->Value = sp->agency;
+	tCastImportaltura->Value  = sp->height;
+	tCastImportanio->Value    = StrToIntDef ( anio , -1 );
+	tCastImportcalzado->Value = sp->shoeSize;
+	tCastImportcamisa->Value  = sp->shirtSize;
+	tCastImportcasting->Value = codigo;
+	tCastImportcodigo->Value  = sp->code;
+	tCastImportdni->Value     = sp->document;
+	tCastImportedad->Value    = sp->age;
 
-	tCastImportFECHA_CASTING->Value    = sp->date;
-	tCastImportFECHA_NACIMIENTO->Value = sp->birthday;
-	tCastImportMEDIDAS->Value          = sp->sizes;
-	tCastImportNOMBRE->Value           = sp->name;
-	tCastImportOBSERVACIONES->Value    = sp->observations;
-	tCastImportPANTALON->Value         = sp->pantsSize;
-	tCastImportPESO->Value             = sp->weight;
-	tCastImportDIA->Value              = dia;
+	tCastImportfecha_casting->Value    = sp->date;
+	tCastImportfecha_nacimiento->Value = sp->birthday;
+	tCastImportmedidas->Value          = sp->sizes;
+	tCastImportnombre->Value           = sp->name;
+	tCastImportobservaciones->Value    = sp->observations;
+	tCastImportpantalon->Value         = sp->pantsSize;
+	tCastImportpeso->Value             = sp->weight;
+	tCastImportdia->Value              = dia;
 
 	tCastImport->Post();
 
@@ -658,28 +658,29 @@ void TDM::saveScoutPerson ( ScoutPerson* sp )
 
 	tScoutImport->Append();
 
-	tScoutImportACTIVIDADES->Value      = sp->activities;
-	tScoutImportALTURA->Value           = sp->height;
-	tScoutImportCELULAR->Value          = sp->celphone;
-	tScoutImportCODIGO->Value           = sp->code;
-	tScoutImportEDAD->Value             = sp->age;
-	tScoutImportEMAIL->Value            = sp->email;
-	tScoutImportFECHA_NACIMIENTO->Value = sp->borndate;
-	tScoutImportFECHA_SCOUT->Value      = sp->date;
-	tScoutImportIDIOMAS->Value          = sp->languages;
-	tScoutImportLUGAR_SCOUT->Value      = sp->place;
-	tScoutImportNACIONALIDAD->Value     = sp->nacionality;
-	tScoutImportNOMBRE->Value           = sp->name;
-	tScoutImportOBSERVACIONES->Value    = sp->observations;
-	tScoutImportPESO->Value   			= sp->weight;
-	tScoutImportTELEFONO->Value         = sp->telephone;
+	tScoutImportactividades->Value  = sp->activities;
+tScoutImportaltura->Value    = sp->height;
+tScoutImportcelular->Value   = sp->celphone;
+tScoutImportcodigo->Value    	= sp->code;
+tScoutImportedad->Value         = sp->age;
+tScoutImportemail->Value       = sp->email;
+tScoutImportfecha_nacimiento->Value 	= sp->borndate;
+tScoutImportfecha_scout->Value          = sp->date;
+tScoutImportidiomas->Value              = sp->languages;
+tScoutImportlugar_scout->Value          = sp->place;
+tScoutImportnacionalidad->Value         = sp->nacionality;
+tScoutImportnombre->Value               = sp->name;
+tScoutImportobservaciones->Value        = sp->observations;
+tScoutImportpeso->Value  			    = sp->weight;
+tScoutImporttelefono->Value             = sp->telephone;
+
 
 	/// Datos de cabecera ( o como llegue a cada una de las personas)
-	tScoutImportXLS_FILE->Value         = currentXLS;
-	tScoutImportANIO->Value             = StrToInt ( anio );
-	tScoutImportMES->Value              = mes;
-	tScoutImportDIA->Value     			= dia;
-	tScoutImportCODIGO_AGRUPADOR->Value = codigo;
+	tScoutImportxls_file->Value         = currentXLS;
+	tScoutImportanio->Value             = StrToInt ( anio );
+	tScoutImportmes->Value              = mes;
+	tScoutImportdia->Value     			= dia;
+	tScoutImportcodigo_agrupador->Value = codigo;
 
 	tScoutImport->Post();
 }
@@ -983,7 +984,7 @@ void TDM::loadColumnsMatch ( void )
 
 	while ( !tSinonimos->Eof )
 	{
-		M [ tSinonimosORIGEN->Value ] = tSinonimosDESTINO->Value;
+		M [ tSinonimosorigen->Value ] = tSinonimosdestino->Value;
 		tSinonimos->Next();
 	}
 	tSinonimos->Close();
