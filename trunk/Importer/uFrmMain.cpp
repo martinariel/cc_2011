@@ -93,3 +93,9 @@ void __fastcall TFormMain::FormCreate(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TFormMain::acProcesarImagenesExecute(TObject *Sender)
+{
+	FrmImagenes->ShowModal();
+}
+//---------------------------------------------------------------------------
+

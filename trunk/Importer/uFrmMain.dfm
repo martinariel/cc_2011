@@ -55,6 +55,15 @@ object FormMain: TFormMain
         Caption = 'Casting'
         GroupIndex = 1
       end
+      object RibbonGroup3: TRibbonGroup
+        Left = 155
+        Top = 3
+        Width = 109
+        Height = 86
+        ActionManager = ActionManager1
+        Caption = 'Utilidades'
+        GroupIndex = 2
+      end
     end
   end
   object GroupBox1: TGroupBox
@@ -96,6 +105,10 @@ object FormMain: TFormMain
       Caption = 'Importar'
       OnExecute = acImportarCastingExecute
     end
+    object acProcesarImagenes: TAction
+      Caption = 'Procesar Im'#225'genes'
+      OnExecute = acProcesarImagenesExecute
+    end
   end
   object ImageList1: TImageList
     Left = 360
@@ -126,6 +139,14 @@ object FormMain: TFormMain
             Caption = '&2- Importar'
           end>
         ActionBar = RibbonGroup2
+      end
+      item
+        Items = <
+          item
+            Action = acProcesarImagenes
+            Caption = '&Procesar Im'#225'genes'
+          end>
+        ActionBar = RibbonGroup3
       end>
     LinkedActionLists = <
       item
