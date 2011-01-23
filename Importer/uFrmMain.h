@@ -18,6 +18,7 @@
 #include <RibbonObsidianStyleActnCtrls.hpp>
 #include <Dialogs.hpp>
 #include "uFrmFolder.h"
+#include "uFrmImagenes.h"
 //---------------------------------------------------------------------------
 class TFormMain : public TForm
 {
@@ -36,11 +37,14 @@ __published:	// IDE-managed Components
 	TAction *acImportarCasting;
 	TActionManager *ActionManager1;
 	TOpenDialog *opendialog;
+	TRibbonGroup *RibbonGroup3;
+	TAction *acProcesarImagenes;
 	void __fastcall acAnalizarScoutExecute(TObject *Sender);
 	void __fastcall acImportarArchivosExecute(TObject *Sender);
 	void __fastcall acAnalizarCastingExecute(TObject *Sender);
 	void __fastcall acImportarCastingExecute(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall acProcesarImagenesExecute(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);
