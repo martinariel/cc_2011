@@ -33,16 +33,20 @@ object DM: TDM
   object tSinonimos: TADOTable
     Connection = DWConnection
     CursorType = ctStatic
-    TableName = 'sinonimos'
+    TableName = 'sinonimo'
     Left = 48
     Top = 104
-    object tSinonimosORIGEN: TStringField
-      FieldName = 'ORIGEN'
+    object tSinonimosorigen: TStringField
+      FieldName = 'origen'
       Size = 50
     end
-    object tSinonimosDESTINO: TStringField
-      FieldName = 'DESTINO'
-      Size = 50
+    object tSinonimosdestino: TStringField
+      FieldName = 'destino'
+      Size = 55
+    end
+    object tSinonimosid: TAutoIncField
+      FieldName = 'id'
+      ReadOnly = True
     end
   end
   object tScoutImport: TADOTable
@@ -51,82 +55,82 @@ object DM: TDM
     TableName = 'scout_import'
     Left = 144
     Top = 112
-    object tScoutImportID: TAutoIncField
-      FieldName = 'ID'
+    object tScoutImportid: TAutoIncField
+      FieldName = 'id'
       ReadOnly = True
     end
-    object tScoutImportCODIGO: TIntegerField
-      FieldName = 'CODIGO'
+    object tScoutImportcodigo: TIntegerField
+      FieldName = 'codigo'
     end
-    object tScoutImportEDAD: TIntegerField
-      FieldName = 'EDAD'
+    object tScoutImportedad: TIntegerField
+      FieldName = 'edad'
     end
-    object tScoutImportPESO: TIntegerField
-      FieldName = 'PESO'
+    object tScoutImportpeso: TIntegerField
+      FieldName = 'peso'
     end
-    object tScoutImportALTURA: TIntegerField
-      FieldName = 'ALTURA'
+    object tScoutImportaltura: TIntegerField
+      FieldName = 'altura'
     end
-    object tScoutImportNOMBRE: TStringField
-      FieldName = 'NOMBRE'
+    object tScoutImportnombre: TStringField
+      FieldName = 'nombre'
       Size = 100
     end
-    object tScoutImportFECHA_NACIMIENTO: TStringField
-      FieldName = 'FECHA_NACIMIENTO'
+    object tScoutImportfecha_nacimiento: TStringField
+      FieldName = 'fecha_nacimiento'
       Size = 12
     end
-    object tScoutImportFECHA_SCOUT: TStringField
-      FieldName = 'FECHA_SCOUT'
+    object tScoutImportfecha_scout: TStringField
+      FieldName = 'fecha_scout'
       Size = 12
     end
-    object tScoutImportLUGAR_SCOUT: TStringField
-      FieldName = 'LUGAR_SCOUT'
+    object tScoutImportlugar_scout: TStringField
+      FieldName = 'lugar_scout'
       Size = 45
     end
-    object tScoutImportOBSERVACIONES: TStringField
-      FieldName = 'OBSERVACIONES'
+    object tScoutImportobservaciones: TStringField
+      FieldName = 'observaciones'
       Size = 255
     end
-    object tScoutImportACTIVIDADES: TStringField
-      FieldName = 'ACTIVIDADES'
+    object tScoutImportactividades: TStringField
+      FieldName = 'actividades'
       Size = 255
     end
-    object tScoutImportEMAIL: TStringField
-      FieldName = 'EMAIL'
+    object tScoutImportemail: TStringField
+      FieldName = 'email'
       Size = 100
     end
-    object tScoutImportTELEFONO: TStringField
-      FieldName = 'TELEFONO'
+    object tScoutImporttelefono: TStringField
+      FieldName = 'telefono'
       Size = 45
     end
-    object tScoutImportCELULAR: TStringField
-      FieldName = 'CELULAR'
+    object tScoutImportcelular: TStringField
+      FieldName = 'celular'
       Size = 45
     end
-    object tScoutImportNACIONALIDAD: TStringField
-      FieldName = 'NACIONALIDAD'
+    object tScoutImportnacionalidad: TStringField
+      FieldName = 'nacionalidad'
       Size = 45
     end
-    object tScoutImportIDIOMAS: TStringField
-      FieldName = 'IDIOMAS'
+    object tScoutImportidiomas: TStringField
+      FieldName = 'idiomas'
       Size = 255
     end
-    object tScoutImportXLS_FILE: TStringField
-      FieldName = 'XLS_FILE'
+    object tScoutImportxls_file: TStringField
+      FieldName = 'xls_file'
       Size = 255
     end
-    object tScoutImportANIO: TIntegerField
-      FieldName = 'ANIO'
+    object tScoutImportanio: TIntegerField
+      FieldName = 'anio'
     end
-    object tScoutImportMES: TStringField
-      FieldName = 'MES'
+    object tScoutImportmes: TStringField
+      FieldName = 'mes'
     end
-    object tScoutImportCODIGO_AGRUPADOR: TStringField
-      FieldName = 'CODIGO_AGRUPADOR'
+    object tScoutImportcodigo_agrupador: TStringField
+      FieldName = 'codigo_agrupador'
       Size = 45
     end
-    object tScoutImportDIA: TStringField
-      FieldName = 'DIA'
+    object tScoutImportdia: TStringField
+      FieldName = 'dia'
       Size = 45
     end
   end
@@ -153,67 +157,71 @@ object DM: TDM
     TableName = 'cast_import'
     Left = 368
     Top = 24
-    object tCastImportCODIGO: TIntegerField
-      FieldName = 'CODIGO'
+    object tCastImportcodigo: TIntegerField
+      FieldName = 'codigo'
     end
-    object tCastImportNOMBRE: TStringField
-      FieldName = 'NOMBRE'
+    object tCastImportnombre: TStringField
+      FieldName = 'nombre'
       Size = 100
     end
-    object tCastImportAGENCIA: TStringField
-      FieldName = 'AGENCIA'
+    object tCastImportagencia: TStringField
+      FieldName = 'agencia'
       Size = 45
     end
-    object tCastImportPANTALON: TStringField
-      FieldName = 'PANTALON'
+    object tCastImportpantalon: TStringField
+      FieldName = 'pantalon'
       Size = 45
     end
-    object tCastImportCAMISA: TStringField
-      FieldName = 'CAMISA'
+    object tCastImportcamisa: TStringField
+      FieldName = 'camisa'
       Size = 45
     end
-    object tCastImportCALZADO: TIntegerField
-      FieldName = 'CALZADO'
+    object tCastImportcalzado: TIntegerField
+      FieldName = 'calzado'
     end
-    object tCastImportALTURA: TIntegerField
-      FieldName = 'ALTURA'
+    object tCastImportaltura: TIntegerField
+      FieldName = 'altura'
     end
-    object tCastImportPESO: TIntegerField
-      FieldName = 'PESO'
+    object tCastImportpeso: TIntegerField
+      FieldName = 'peso'
     end
-    object tCastImportFECHA_NACIMIENTO: TStringField
-      FieldName = 'FECHA_NACIMIENTO'
+    object tCastImportfecha_nacimiento: TStringField
+      FieldName = 'fecha_nacimiento'
       Size = 45
     end
-    object tCastImportFECHA_CASTING: TStringField
-      FieldName = 'FECHA_CASTING'
+    object tCastImportfecha_casting: TStringField
+      FieldName = 'fecha_casting'
       Size = 45
     end
-    object tCastImportCASTING: TStringField
-      FieldName = 'CASTING'
+    object tCastImportcasting: TStringField
+      FieldName = 'casting'
       Size = 45
     end
-    object tCastImportANIO: TIntegerField
-      FieldName = 'ANIO'
+    object tCastImportanio: TIntegerField
+      FieldName = 'anio'
     end
-    object tCastImportMEDIDAS: TStringField
-      FieldName = 'MEDIDAS'
+    object tCastImportmedidas: TStringField
+      FieldName = 'medidas'
       Size = 45
     end
-    object tCastImportDNI: TStringField
-      FieldName = 'DNI'
+    object tCastImportdni: TStringField
+      FieldName = 'dni'
       Size = 45
     end
-    object tCastImportOBSERVACIONES: TStringField
-      FieldName = 'OBSERVACIONES'
+    object tCastImportobservaciones: TMemoField
+      FieldName = 'observaciones'
+      BlobType = ftMemo
+    end
+    object tCastImportedad: TIntegerField
+      FieldName = 'edad'
+    end
+    object tCastImportdia: TStringField
+      FieldName = 'dia'
       Size = 45
     end
-    object tCastImportEDAD: TIntegerField
-      FieldName = 'EDAD'
-    end
-    object tCastImportDIA: TStringField
-      FieldName = 'DIA'
-      Size = 45
+    object tCastImportid: TAutoIncField
+      FieldName = 'id'
+      ReadOnly = True
     end
   end
 end

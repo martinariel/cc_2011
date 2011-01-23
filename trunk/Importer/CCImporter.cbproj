@@ -87,6 +87,11 @@
 				<DependentOn>uDM.h</DependentOn>
 				<BuildOrder>3</BuildOrder>
 			</CppCompile>
+			<CppCompile Include="uFrmFolder.cpp">
+				<Form>FrmFolder</Form>
+				<DependentOn>uFrmFolder.h</DependentOn>
+				<BuildOrder>7</BuildOrder>
+			</CppCompile>
 			<CppCompile Include="uFrmMain.cpp">
 				<Form>FormMain</Form>
 				<DependentOn>uFrmMain.h</DependentOn>
@@ -94,6 +99,7 @@
 			</CppCompile>
 			<FormResources Include="uDM.dfm"/>
 			<FormResources Include="uFrmMain.dfm"/>
+			<FormResources Include="uFrmFolder.dfm"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
