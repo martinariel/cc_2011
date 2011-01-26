@@ -6,15 +6,15 @@ default:
     content-type: text/html
 
   metas:
-    #title:        symfony project
-    #description:  symfony project
-    #keywords:     symfony, project
-    #language:     en
+    #title:        Casting Club 
+    #description:  
+    #keywords:     
+    #language:     es
     #robots:       index, follow
 
-  stylesheets:    [main.css]
+  stylesheets:    [ screen.css ]
 
-  javascripts:    []
+  javascripts:    [ jquery-1.4.1.min.js,  ui.core.js ,  ui.checkbox.js, jquery.bind.js,  jquery.selectbox-0.5.js,  jquery.selectbox-0.5_style_2.js,  jquery.filestyle.js, custom_jquery.js, jquery.tooltip.js,  jquery.dimensions.js,  date.js, jquery.datePicker.js, personas.js, jquery.pngFix.pack.js ]
 
   has_layout:     true
   layout:         layout
