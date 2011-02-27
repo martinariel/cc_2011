@@ -5,8 +5,8 @@ object DM: TDM
   Width = 591
   object DWConnection: TADOConnection
     ConnectionString = 
-      'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
-      ' Source=cc;Initial Catalog=webapp;'
+      'Provider=MSDASQL.1;Password=1234;Persist Security Info=True;User' +
+      ' ID=import;Data Source=cc;Initial Catalog=cc'
     LoginPrompt = False
     Provider = 'MSDASQL.1'
     Left = 40
