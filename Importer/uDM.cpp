@@ -26,7 +26,7 @@ __fastcall TDM::TDM(TComponent* Owner)
 	ftpUser     = ini->ReadString ( "FTP" , "USER"     , "ROOT" );
 	ftpPassword = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT" );
 
-	//DWConnection->ConnectionString = "FILE NAME=" + ChangeFileExt(Application->ExeName, ".udl" );
+	DWConnection->ConnectionString = ini->ReadString ( "BASE", "CONEXION" , "" );
 	DWConnection->Open();
 
 	mediaList     = new list<MediaFile*>();
@@ -106,10 +106,25 @@ void TDM::setLogMemo ( TMemo* memo )
 
 void TDM::uploadMediaList ( void )
 {
-	if ( analisis || 1 == 1)
+	if ( analisis)
 		return;
 
 	log ( "   -  Subiendo Archivos de media al FTP Server. " );
+
+
+    for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+	{
+		MediaFile* mf = *it;
+
+		UnicodeString origin = mf->path;
+		UnicodeString dest = "C:\\Archivos\\" + IntToStr( mf->code ) + "_" + mf->name;
+
+		CopyFile( origin.c_str() , dest.c_str() , false );
+
+		Application->ProcessMessages();
+	}
+
+	return;
 
 	if ( FTP->Connected())
 		FTP->Disconnect();
@@ -128,6 +143,8 @@ void TDM::uploadMediaList ( void )
 		UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
 
 		FTP->Put ( origin , dest );
+
+		Application->ProcessMessages();
 	}
 
 	FTP->Disconnect();
@@ -178,7 +195,7 @@ bool TDM::isDayFolder ( const AnsiString& name )
 AnsiString TDM::mapString ( const AnsiString& Column , const AnsiString& defaultValue )
 {
 	return ( indexMatched[ Column ] != -1 ) ?
-		XLSQuery->Fields->Fields[ indexMatched[ Column ] ]->AsString  : (UnicodeString)defaultValue ;
+		UpperCase( Trim(XLSQuery->Fields->Fields[ indexMatched[ Column ] ]->AsString) ) : (UnicodeString)defaultValue ;
 }
 
 //---------------------------------------------------------------------------
@@ -249,7 +266,6 @@ void TDM::mapCastPerson ( CastPerson* sp )
 
 void TDM::saveCastPerson ( CastPerson* sp )
 {
-
 	if ( analisis )
 		return;
 
@@ -565,11 +581,13 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 					//4 - Proceso el excel
 					loadCurrentScouting();
 
-					//5 - subida FTP
+					////5 - subida FTP
 					uploadMediaList();
+
 
 					if ( !analisis )
 						tScoutImport->Close();
+
 
 					XLSConnection->Close();
 
@@ -627,7 +645,7 @@ void TDM::loadMediaListRecursive ( const AnsiString& path , list<MediaFile*>* re
 			if (  isMediaFile ( sr.Name ) && FileExists( path + "\\" + sr.Name ) )
 			{
 				MediaFile* mf = new MediaFile();
-				mf->path = path + "\\" + sr.Name + "\\" + sr.Name;
+				mf->path = path + "\\" + sr.Name;
 				mf->name = sr.Name;
 				results->push_back( mf );
 			}
@@ -658,21 +676,21 @@ void TDM::saveScoutPerson ( ScoutPerson* sp )
 
 	tScoutImport->Append();
 
-	tScoutImportactividades->Value  = sp->activities;
-tScoutImportaltura->Value    = sp->height;
-tScoutImportcelular->Value   = sp->celphone;
-tScoutImportcodigo->Value    	= sp->code;
-tScoutImportedad->Value         = sp->age;
-tScoutImportemail->Value       = sp->email;
-tScoutImportfecha_nacimiento->Value 	= sp->borndate;
-tScoutImportfecha_scout->Value          = sp->date;
-tScoutImportidiomas->Value              = sp->languages;
-tScoutImportlugar_scout->Value          = sp->place;
-tScoutImportnacionalidad->Value         = sp->nacionality;
-tScoutImportnombre->Value               = sp->name;
-tScoutImportobservaciones->Value        = sp->observations;
-tScoutImportpeso->Value  			    = sp->weight;
-tScoutImporttelefono->Value             = sp->telephone;
+	tScoutImportactividades->Value  		= sp->activities;
+	tScoutImportaltura->Value    			= sp->height;
+	tScoutImportcelular->Value   			= sp->celphone;
+	tScoutImportcodigo->Value    			= sp->code;
+	tScoutImportedad->Value         		= sp->age;
+	tScoutImportemail->Value       			= sp->email;
+	tScoutImportfecha_nacimiento->Value 	= sp->borndate;
+	tScoutImportfecha_scout->Value          = sp->date;
+	tScoutImportidiomas->Value              = sp->languages;
+	tScoutImportlugar_scout->Value          = sp->place;
+	tScoutImportnacionalidad->Value         = sp->nacionality;
+	tScoutImportnombre->Value               = sp->name;
+	tScoutImportobservaciones->Value        = sp->observations;
+	tScoutImportpeso->Value  			    = sp->weight;
+	tScoutImporttelefono->Value             = sp->telephone;
 
 
 	/// Datos de cabecera ( o como llegue a cada una de las personas)
@@ -1016,6 +1034,7 @@ void TDM::clearScoutColumnsMatched ( void )
 	indexMatched[COLUMN_AGENCY]       = -1;
 	indexMatched[COLUMN_SIZES]        = -1;
 }
+
 
 
 

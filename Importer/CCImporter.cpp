@@ -7,6 +7,7 @@
 USEFORM("uDM.cpp", DM); /* TDataModule: File Type */
 USEFORM("uFrmMain.cpp", FormMain);
 USEFORM("uFrmFolder.cpp", FrmFolder);
+USEFORM("uFrmImagenes.cpp", FrmImagenes);
 //---------------------------------------------------------------------------
 WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -17,6 +18,7 @@ WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		Application->CreateForm(__classid(TDM), &DM);
 		Application->CreateForm(__classid(TFormMain), &FormMain);
 		Application->CreateForm(__classid(TFrmFolder), &FrmFolder);
+		Application->CreateForm(__classid(TFrmImagenes), &FrmImagenes);
 		Application->Run();
 	}
 	catch (Exception &exception)
