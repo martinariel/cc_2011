@@ -4,11 +4,11 @@ object DM: TDM
   Height = 234
   Width = 591
   object DWConnection: TADOConnection
-    Connected = True
     ConnectionString = 
       'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
       ' Source=cc;Initial Catalog=webapp;'
     LoginPrompt = False
+    Provider = 'MSDASQL.1'
     Left = 40
     Top = 24
   end
