@@ -34,6 +34,8 @@ __fastcall TDM::TDM(TComponent* Owner)
 	tablesMatch   = new map<AnsiString,bool>();
 	foundedTables = new TStringList();
 
+	processedFiles = new TStringList();
+
 	loadColumnsMatch();
 	loadTablesMatch();
 
@@ -51,7 +53,33 @@ void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 	delete columnsMatch;
 	delete tablesMatch;
 	delete foundedTables;
+	delete processedFiles;
 }
+
+//--------------------------------------------------------------------------
+bool TDM::isFileProcessed ( const AnsiString& file ) const
+{
+	if ( processedFiles->Count == 0 && FileExists( ChangeFileExt ( Application->ExeName  , ".archivos_procesados" ) ) )
+	{
+		processedFiles->LoadFromFile( ChangeFileExt ( Application->ExeName  , ".archivos_procesados" ) );
+	}
+
+	return processedFiles->IndexOf ( file ) >= 0 ;
+}
+
+//--------------------------------------------------------------------------
+
+void TDM::addProcessedFile ( const AnsiString& file )
+{
+	processedFiles->Add( file );
+
+	ofstream fileProcessed ( ChangeFileExt ( Application->ExeName  , ".archivos_procesados" ).c_str() , ios::app ) ;
+
+	fileProcessed << file.c_str() << std::endl;
+
+	fileProcessed.close();
+}
+
 //---------------------------------------------------------------------------
 
 bool TDM::connectXLS ( const AnsiString& fileName )
@@ -86,13 +114,20 @@ void TDM::setAnalisis ( bool value )
 void TDM::log ( const AnsiString& msg )
 {
 	Application->ProcessMessages();
-
-	if ( mEstado->Lines->Count == 200 )
-	{
-	  //	mEstado->Lines->Clear();
-	}
-
 	mEstado->Lines->Add ( msg );
+}
+
+//---------------------------------------------------------------------------
+
+void TDM::logError ( const AnsiString& error )
+{
+	ofstream errorLog ( ChangeFileExt(Application->ExeName, ".error.log" ).c_str() , ios::app );
+
+	errorLog << error.c_str() << std::endl;
+
+	log ( error );
+
+	errorLog.close();
 }
 
 //---------------------------------------------------------------------------
@@ -111,7 +146,7 @@ void TDM::uploadMediaList ( void )
 
 	log ( "   -  Subiendo Archivos de media al FTP Server. " );
 
-
+	/*
     for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
 	{
 		MediaFile* mf = *it;
@@ -125,6 +160,7 @@ void TDM::uploadMediaList ( void )
 	}
 
 	return;
+	*/
 
 	if ( FTP->Connected())
 		FTP->Disconnect();
@@ -374,41 +410,55 @@ void TDM::matchAndLoadCast ( void )
 
 void TDM::loadCurrentCast ( void )
 {
-	if ( connectXLS ( currentXLS ) )
+	if ( analisis || !isFileProcessed( currentXLS ) )
 	{
-		try
+		if ( connectXLS ( currentXLS ) )
 		{
-			openXLSSheet();
-
-			if ( !analisis )
+			try
 			{
-				log ( "VACIANDO TABLA DE PROCESO." );
-				clearTable ( "cast_import" );
-				tCastImport->Open();
+				openXLSSheet();
+
+				log ( "-------------------------------------------------------------------------------------------------" );
+				log ( "Procesando " + currentXLS );
+				log ( "" );
+
+				if ( !analisis )
+				{
+					log ( "   - Vaciando tabla de Proceso." );
+					clearTable ( "cast_import" );
+					tCastImport->Open();
+				}
+
+				loadMediaList ( ExtractFilePath ( currentXLS ) );
+
+				matchAndLoadCast();
+
+				uploadMediaList();
+
+				XLSConnection->Close();
+
+				if ( !analisis )
+					tCastImport->Close();
+
+				notifyCastLoad();
+
+				if ( !analisis )
+					addProcessedFile ( currentXLS );
+
 			}
-
-			loadMediaList ( ExtractFilePath ( currentXLS ) );
-
-			matchAndLoadCast();
-
-			uploadMediaList();
-
-			XLSConnection->Close();
-
-			if ( !analisis )
-				tCastImport->Close();
-
-			notifyCastLoad();
-
+			catch ( ... )
+			{
+				logError ( " ************ ERROR: loadCurrentCast" );
+			}
 		}
-		catch ( ... )
+		else
 		{
-			log ( "ERROR" );
+			logError ( " ********* ERROR: conectarse a " + currentXLS );
 		}
 	}
 	else
 	{
-		log ( " ERROR al conectarse a: " + currentXLS );
+		log ( currentXLS + " YA HA SIDO PROCESADO");
 	}
 }
 
@@ -566,42 +616,52 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 					log ( "Procesando " + currentXLS );
 					log ( "" );
 
-					//2 - Cargo la lista de media
-					loadMediaList ( path );
-
-					//3 Vacio la tabla de proceso
-					if ( !analisis )
+					if ( analisis || !isFileProcessed ( currentXLS ) )
 					{
-						log ( "   -  Limpiando tabla de proceso. " );
-						clearTable("scout_import");
-						tScoutImport->Open();
+
+						//2 - Cargo la lista de media
+						loadMediaList ( path );
+
+						//3 Vacio la tabla de proceso
+						if ( !analisis )
+						{
+							log ( "   -  Limpiando tabla de proceso. " );
+							clearTable("scout_import");
+							tScoutImport->Open();
+						}
+
+						//
+						//4 - Proceso el excel
+						loadCurrentScouting();
+
+						////5 - subida FTP
+						uploadMediaList();
+
+						if ( !analisis )
+							tScoutImport->Close();
+
+
+						XLSConnection->Close();
+
+						//6 - Notifico a la aplicación web para que procese.
+						notifyScoutLoad();
+
+						if ( !analisis )
+							addProcessedFile( currentXLS );
 					}
-
-					//
-					//4 - Proceso el excel
-					loadCurrentScouting();
-
-					////5 - subida FTP
-					uploadMediaList();
-
-
-					if ( !analisis )
-						tScoutImport->Close();
-
-
-					XLSConnection->Close();
-
-					//6 - Notifico a la aplicación web para que procese.
-					notifyScoutLoad();
+					else
+					{
+						log ( currentXLS + " YA HA SIDO PROCESADO");
+					}
 				}
 				catch (...)
 				{
-					log ( "************* ERROR LECTURA XLS : " + path + "\\" + sr.Name );
+					logError ( "************* ERROR LECTURA XLS : " + path + "\\" + sr.Name );
 				}
 			}
 			else
 			{
-				log ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
+				logError ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
 			}
 		}
     }}
@@ -771,7 +831,7 @@ void TDM::openXLSSheetBySinomy ( void )
 	}
 	else
 	{
-		log ( "ERROR: Hoja de calculo no encontrada, " + currentXLS );
+		logError ( "ERROR: Hoja de calculo no encontrada, " + currentXLS );
 
 		#ifdef DEBUG_TO_DISC
 		ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".tables_not_match" ).c_str() , ios::app );
@@ -1034,6 +1094,7 @@ void TDM::clearScoutColumnsMatched ( void )
 	indexMatched[COLUMN_AGENCY]       = -1;
 	indexMatched[COLUMN_SIZES]        = -1;
 }
+
 
 
 
