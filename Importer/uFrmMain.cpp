@@ -18,11 +18,24 @@ __fastcall TFormMain::TFormMain(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::acAnalizarScoutExecute(TObject *Sender)
 {
+	UnicodeString archivo;
+
 	FrmFolder->Caption = "Seleccione el directorio de Scouting ... ";
 	if ( FrmFolder->ShowModal() == mrOk )
 	{
 
 		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+
+
+		archivo = ExtractFilePath ( Application->ExeName ) + "\\CCImporter.error.log";
+
+		if ( FileExists(archivo) )
+			DeleteFileW ( archivo );
+
+		archivo = ExtractFilePath ( Application->ExeName ) + "\\CCImporter.scout_not_match";
+		if ( FileExists(archivo) )
+			DeleteFileW ( archivo );
+
 		DM->setAnalisis(true);
 		DM->iterateScouting (folder);
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
@@ -56,9 +69,20 @@ void __fastcall TFormMain::acImportarArchivosExecute(TObject *Sender)
 
 void __fastcall TFormMain::acAnalizarCastingExecute(TObject *Sender)
 {
+	UnicodeString archivo;
+
 	FrmFolder->Caption = "Seleccione el directorio de Casting ... ";
 	if ( FrmFolder->ShowModal() == mrOk )
 	{
+
+		archivo = ExtractFilePath ( Application->ExeName ) + "\\CCImporter.cast_not_match";
+		if ( FileExists(archivo) )
+			DeleteFileW ( archivo );
+
+		archivo = ExtractFilePath ( Application->ExeName ) + "\\CCImporter.error.log";
+		if ( FileExists(archivo) )
+			DeleteFileW ( archivo );
+
 		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
 		DM->setAnalisis(true);
 		DM->iterateCasting ( folder );

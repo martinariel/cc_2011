@@ -101,6 +101,11 @@ __published:	// IDE-managed Components
 
 private:	// User declarations
 
+
+	TStringList* processedFiles;
+	bool isFileProcessed ( const AnsiString& file ) const;
+	void addProcessedFile ( const AnsiString&  file );
+
 	// Configuration parameters
 
 	// FTP
@@ -176,6 +181,8 @@ private:	// User declarations
 
 	// Checks if a file (by extension) is a valid media file.
 	bool isMediaFile   ( const AnsiString& name );
+
+	void logError ( const AnsiString& error );
 
 	void loadColumnsMatch ( void );
 	void loadTablesMatch ( void );
