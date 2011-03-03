@@ -313,7 +313,7 @@ void TDM::saveCastPerson ( CastPerson* sp )
 	tCastImportanio->Value    = StrToIntDef ( anio , -1 );
 	tCastImportcalzado->Value = sp->shoeSize;
 	tCastImportcamisa->Value  = sp->shirtSize;
-	tCastImportcasting->Value = codigo;
+	tCastImportcasting->Value = Trim(UpperCase(codigo));
 	tCastImportcodigo->Value  = sp->code;
 	tCastImportdni->Value     = sp->document;
 	tCastImportedad->Value    = sp->age;
@@ -325,7 +325,7 @@ void TDM::saveCastPerson ( CastPerson* sp )
 	tCastImportobservaciones->Value    = sp->observations;
 	tCastImportpantalon->Value         = sp->pantsSize;
 	tCastImportpeso->Value             = sp->weight;
-	tCastImportdia->Value              = dia;
+	tCastImportdia->Value              = Trim(UpperCase(dia));
 	tCastImportcelular->Value		   = sp->celphone;
 	tCastImporttelefono->Value		   = sp->telephone;
 	tCastImportemail->Value			   = sp->email;
@@ -760,9 +760,9 @@ void TDM::saveScoutPerson ( ScoutPerson* sp )
 	/// Datos de cabecera ( o como llegue a cada una de las personas)
 	tScoutImportxls_file->Value         = currentXLS;
 	tScoutImportanio->Value             = StrToInt ( anio );
-	tScoutImportmes->Value              = mes;
-	tScoutImportdia->Value     			= dia;
-	tScoutImportcodigo_agrupador->Value = codigo;
+	tScoutImportmes->Value              = Trim(UpperCase(mes ));
+	tScoutImportdia->Value     			= Trim(UpperCase(dia));
+	tScoutImportcodigo_agrupador->Value = Trim(UpperCase(codigo));
 
 	tScoutImport->Post();
 }
