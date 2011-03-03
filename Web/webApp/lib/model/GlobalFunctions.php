@@ -18,8 +18,13 @@ class GlobalFunctions
 	 * @param string $fecha
 	 * @return DateTime
 	 */
-	public static function parsearFecha ( $fecha )
+	public static function parsearFecha ( $fecha , $anio = null )
 	{
+		if ( $anio == '' ) $anio = null;
+		
+		$fecha = str_replace ( "DIA", "", $fecha );
+		$fecha = str_replace ( "DÍA" , "", $fecha );
+		
 		$fecha = ltrim(rtrim ( $fecha ));
 		$fecha = ltrim(rtrim ( $fecha , ".") , ".");
 		
@@ -29,24 +34,21 @@ class GlobalFunctions
 		$fecha = str_replace ( "-" , "/", $fecha );
 		$fecha = str_replace ( "." , "/", $fecha );
 		$fecha = str_replace ( "–" , "/", $fecha );
-		
+
 		$fecha = trim ( $fecha );
 		$fecha = str_replace ( " " , "/", $fecha );
 	
 		$valores = explode( "/" , $fecha );
 		
-		if ( count ($valores) < 3 )
-		{
-			return null;
-		}
-		else
+		if ( count ($valores) >= 3 || (count( $valores ) == 2 && $anio != null ))
 		{
 		
 			$dt = new DateTime();
 			
 			$day   = (int)$valores[0];
 			$month = (int)$valores[1];
-			$year  = (int)$valores[2];
+			
+			$year  = ( count ( $valores ) >= 3 ) ? (int)$valores[2] : (int)$anio;
 			
 			if ( $month > 12 && $day <= 12)
 			{
@@ -63,6 +65,10 @@ class GlobalFunctions
 			$dt->setDate($year, $month, $day);
 			
 			return $dt;
+		}
+		else
+		{
+			return null;
 		}
 	}
 	

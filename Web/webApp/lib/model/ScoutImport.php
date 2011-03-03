@@ -55,7 +55,7 @@ class ScoutImport extends BaseScoutImport {
 			$fechaNacimiento = GlobalFunctions::calcularFechaNacimiento( $this->getEdad() , $this->getAnio() );
 		}
 		// 5 - Fecha de Scouting
-		$fechaScouting = GlobalFunctions::parsearFecha( $this->getFechaScout() );
+		$fechaScouting = GlobalFunctions::parsearFecha( $this->getFechaScout() , $this->getAnio() );
 		
 		if ( $fechaScouting == null)
 		{
