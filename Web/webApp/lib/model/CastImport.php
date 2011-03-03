@@ -23,7 +23,7 @@ class CastImport extends BaseCastImport {
 		$ci = $this;
 		
 		// 1 - Busco el casting
-    	$casting = CastingPeer::buscar ( $ci->getCasting() );
+    	$casting = CastingPeer::buscar ( $ci->getCasting() , $ci->getAnio() );
     	
     	// 2 - Busco la agencia
     	$agencia = AgenciaPeer::buscar( $ci->getAgencia() );
@@ -33,6 +33,9 @@ class CastImport extends BaseCastImport {
     	
     	// 4 - Obentgo la fecha de nacimiento
     	$fechaNacimiento = GlobalFunctions::parsearFecha($ci->getFechaNacimiento() ); 
+    	
+    	//TODO: Parsear del dia!.
+    	$fechaCasting = null;
     	
     	$persona = null;
     	
@@ -65,15 +68,50 @@ class CastImport extends BaseCastImport {
 			$persona->setCalzado( $ci->getCalzado() );  
     		$persona->setCamisa( $ci->getCamisa() );  
     		$persona->setPantalon( $ci->getPantalon() );  
-			
-			// TODO!!!!
+			$persona->setFechaActualizacion ( $fechaCasting );
 			$persona->setTelefono($ci->getTelefono());
 			$persona->setCelular ($ci->getCelular() );
-			$persona->setEmail($this->getEmail());
+			$persona->setEmail($ci->getEmail());
 			
 			$persona->save();
 			
 			$f_new = true;
+    	}
+    	else if ( $fechaCasting != null && 
+    			 $fechaCasting->format('U') > $persona->getFechaActualizacion()->format('U') )
+    	{
+    		// HUBO match
+    		//Tengo que fijarme si la fecha del casting es mayor a la fecha de actualizacion 
+    		// de la persona
+    		
+    		if ( $ci->getCalzado() != -1 )
+    			$persona->setCalzado( $ci->getCalzado() ); 
+    		
+    		if ( $ci->getCamisa() != '' )
+    			$persona->setCamisa( $ci->getCamisa() );  
+    		
+    		if ( $ci->getPantalon() != '')
+    			$persona->setPantalon( $ci->getPantalon() );  
+    			
+			$persona->setFechaActualizacion ( $fechaCasting );
+			
+			if ( $ci->getTelefono() != '' )
+				$persona->setTelefono($ci->getTelefono());
+				
+			if ( $ci->getCelular() != '' )
+				$persona->setCelular ($ci->getCelular() );
+			
+			if ( $ci->getEmail() != '' )
+				$persona->setEmail($ci->getEmail());
+			
+			if ( $ci->getPeso() != -1 )
+				$persona->setPeso ( $ci->getPeso() );
+			
+			if ( $ci->getAltura() != 0 )
+				$persona->setAltura ( $ci->getAltura() );
+			
+			$persona->save();
+    		
     	}
     	
     	$personaCasting = new PersonaCasting();
@@ -83,17 +121,12 @@ class CastImport extends BaseCastImport {
     	$personaCasting->setCamisa( $ci->getCamisa() );  
     	$personaCasting->setPantalon( $ci->getPantalon() );  
     	$personaCasting->setObservaciones( $ci->getObservaciones() );
-    	
-    	// TODO
-    	
     	$personaCasting->setTelefono($ci->getTelefono());
-	$personaCasting->setCelular ($ci->getCelular() );
-	$personaCasting->setEmail($this->getEmail());
+		$personaCasting->setCelular ($ci->getCelular() );
+		$personaCasting->setEmail($ci->getEmail());
 
     	$personaCasting->setPersona( $persona );
     	$personaCasting->setCasting( $casting );
-    	
-    	// TODO
     	$personaCasting->setAgencia ( $agencia ); 
     	
     	$personaCasting->save();

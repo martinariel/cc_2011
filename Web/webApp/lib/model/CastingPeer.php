@@ -18,7 +18,7 @@
  */
 class CastingPeer extends BaseCastingPeer {
 
-	public static function buscar ( $nombre )
+	public static function buscar ( $nombre , $anio )
 	{
 		$casting = null;
 		
@@ -31,6 +31,7 @@ class CastingPeer extends BaseCastingPeer {
 			$c = new Criteria();
 			
 			$c->add ( self::NOMBRE , $nombre , Criteria::EQUAL );
+			$c->add ( self::ANIO , $anio , Criteria::EQUAL );
 			
 			$castings = self::doSelect( $c );
 			
@@ -38,6 +39,7 @@ class CastingPeer extends BaseCastingPeer {
 			{
 				$casting = new Casting();
 				$casting->setNombre ( $nombre );
+				$casting->setAnio ( $anio );
 				$casting->save();
 			}
 			else
