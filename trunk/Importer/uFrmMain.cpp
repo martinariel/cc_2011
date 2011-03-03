@@ -5,6 +5,7 @@
 
 #include "uFrmMain.h"
 #include "uDM.h"
+#include "uFrmSinonimos.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -120,6 +121,12 @@ void __fastcall TFormMain::FormCreate(TObject *Sender)
 void __fastcall TFormMain::acProcesarImagenesExecute(TObject *Sender)
 {
 	FrmImagenes->ShowModal();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::AccSinonimosExecute(TObject *Sender)
+{
+	FrmSinonimos->ShowModal();
 }
 //---------------------------------------------------------------------------
 

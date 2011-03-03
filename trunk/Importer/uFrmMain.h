@@ -39,12 +39,14 @@ __published:	// IDE-managed Components
 	TOpenDialog *opendialog;
 	TRibbonGroup *RibbonGroup3;
 	TAction *acProcesarImagenes;
+	TAction *AccSinonimos;
 	void __fastcall acAnalizarScoutExecute(TObject *Sender);
 	void __fastcall acImportarArchivosExecute(TObject *Sender);
 	void __fastcall acAnalizarCastingExecute(TObject *Sender);
 	void __fastcall acImportarCastingExecute(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall acProcesarImagenesExecute(TObject *Sender);
+	void __fastcall AccSinonimosExecute(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);

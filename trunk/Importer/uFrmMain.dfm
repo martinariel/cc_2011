@@ -14,6 +14,25 @@ object FormMain: TFormMain
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object GroupBox1: TGroupBox
+    Left = 0
+    Top = 143
+    Width = 724
+    Height = 290
+    Align = alClient
+    Caption = 'Estado'
+    TabOrder = 1
+    object mEstado: TMemo
+      Left = 2
+      Top = 15
+      Width = 720
+      Height = 273
+      Align = alClient
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 0
+    end
+  end
   object Ribbon1: TRibbon
     Left = 0
     Top = 0
@@ -21,6 +40,7 @@ object FormMain: TFormMain
     Height = 143
     ActionManager = ActionManager1
     Caption = 'Casting Club Importer'
+    ShowHelpButton = False
     Tabs = <
       item
         Caption = 'Importaci'#243'n'
@@ -64,25 +84,6 @@ object FormMain: TFormMain
         Caption = 'Utilidades'
         GroupIndex = 2
       end
-    end
-  end
-  object GroupBox1: TGroupBox
-    Left = 0
-    Top = 143
-    Width = 724
-    Height = 290
-    Align = alClient
-    Caption = 'Estado'
-    TabOrder = 1
-    object mEstado: TMemo
-      Left = 2
-      Top = 15
-      Width = 720
-      Height = 273
-      Align = alClient
-      ReadOnly = True
-      ScrollBars = ssVertical
-      TabOrder = 0
     end
   end
   object ActionList1: TActionList
@@ -143,6 +144,10 @@ object FormMain: TFormMain
       item
         Items = <
           item
+            Action = AccSinonimos
+            Caption = '&Sin'#243'nimos'
+          end
+          item
             Action = acProcesarImagenes
             Caption = '&Procesar Im'#225'genes'
           end>
@@ -156,6 +161,10 @@ object FormMain: TFormMain
     Left = 528
     Top = 264
     StyleName = 'Ribbon - Obsidian'
+    object AccSinonimos: TAction
+      Caption = 'Sin'#243'nimos'
+      OnExecute = AccSinonimosExecute
+    end
   end
   object opendialog: TOpenDialog
     Left = 400
