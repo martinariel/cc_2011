@@ -6,7 +6,7 @@
 # @version 2.0
 
 propel:
- nacionalidad:
+  nacionalidad:
     id: ~
     descripcion:  { type: varchar(100) , required. true, default: "" }
   agencia:
@@ -49,7 +49,7 @@ propel:
     calzado:        { type: varchar(20), default: -1 }
     pantalon:       { type: varchar(20), default: -1 }
     camisa:         { type: varchar(20), default: -1 }
-    observaciones:  { type: longvarchar }  
+    observaciones:  { type: longvarchar }
     updated_at:   ~
     created_at:   ~
   persona:
@@ -67,6 +67,7 @@ propel:
     pantalon:     { type: varchar(20), default: -1 }
     camisa:         { type: varchar(20), default: -1 }
     observaciones:  { type: longvarchar }  
+    fecha_actualizacion: { type: date, required: true, default: "0000-00-00" }
     nacionalidad_id:  ~
     created_at:   ~
   scout_import:
