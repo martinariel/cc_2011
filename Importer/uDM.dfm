@@ -152,7 +152,9 @@ object DM: TDM
     Top = 40
   end
   object tCastImport: TADOTable
-    Connection = DWConnection
+    ConnectionString = 
+      'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
+      ' Source=cc;Initial Catalog=webapp'
     CursorType = ctStatic
     TableName = 'cast_import'
     Left = 368
@@ -219,9 +221,17 @@ object DM: TDM
       FieldName = 'dia'
       Size = 45
     end
-    object tCastImportid: TAutoIncField
-      FieldName = 'id'
-      ReadOnly = True
+    object tCastImporttelefono: TStringField
+      FieldName = 'telefono'
+      Size = 45
+    end
+    object tCastImportcelular: TStringField
+      FieldName = 'celular'
+      Size = 45
+    end
+    object tCastImportemail: TStringField
+      FieldName = 'email'
+      Size = 45
     end
   end
 end

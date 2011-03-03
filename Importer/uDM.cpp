@@ -296,6 +296,7 @@ void TDM::mapCastPerson ( CastPerson* sp )
 	sp->sizes 		 = mapString  ( COLUMN_SIZES );
 	sp->shoeSize     = mapInteger ( COLUMN_SHOE_SIZE );
 	sp->agency       = mapString  ( COLUMN_AGENCY );
+	sp->email		 = mapString  ( COLUMN_EMAIL );
 }
 
 //---------------------------------------------------------------------------
@@ -325,6 +326,9 @@ void TDM::saveCastPerson ( CastPerson* sp )
 	tCastImportpantalon->Value         = sp->pantsSize;
 	tCastImportpeso->Value             = sp->weight;
 	tCastImportdia->Value              = dia;
+	tCastImportcelular->Value		   = sp->celphone;
+	tCastImporttelefono->Value		   = sp->telephone;
+	tCastImportemail->Value			   = sp->email;
 
 	tCastImport->Post();
 
@@ -425,7 +429,7 @@ void TDM::loadCurrentCast ( void )
 				if ( !analisis )
 				{
 					log ( "   - Vaciando tabla de Proceso." );
-					clearTable ( "cast_import" );
+					//clearTable ( "cast_import" );
 					tCastImport->Open();
 				}
 
@@ -433,14 +437,14 @@ void TDM::loadCurrentCast ( void )
 
 				matchAndLoadCast();
 
-				uploadMediaList();
+				//uploadMediaList();
 
 				XLSConnection->Close();
 
 				if ( !analisis )
 					tCastImport->Close();
 
-				notifyCastLoad();
+				//notifyCastLoad();
 
 				if ( !analisis )
 					addProcessedFile ( currentXLS );

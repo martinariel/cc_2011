@@ -9,7 +9,7 @@ CastPerson::CastPerson ( void )
 {
 	name = agency = celphone = document = observations
 	= shirtSize = pantsSize = birthday = date =
-	sizes = "";
+	sizes = telephone = email = "";
 
 	weight= height = shoeSize  = code = age = -1;
 }
