@@ -39,8 +39,7 @@ class CastImport extends BaseCastImport {
     		$fechaNacimiento = GlobalFunctions::calcularFechaNacimiento( $ci->getEdad() , $ci->getAnio() );
     	}
     	
-    	//TODO: Parsear del dia!.
-    	$fechaCasting = null;
+    	$fechaCasting = GlobalFunctions::parsearFecha( $ci->getDia() , $ci->getAnio() ); 
     	
     	$persona = null;
     	
