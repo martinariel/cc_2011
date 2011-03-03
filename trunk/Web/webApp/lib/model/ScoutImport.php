@@ -72,8 +72,11 @@ class ScoutImport extends BaseScoutImport {
 		// 5 - Fecha de Scouting
 		$fechaScouting = GlobalFunctions::parsearFecha( $this->getFechaScout() );
 		
-		// TODO: Si no tengo fecha de scouting, la armo a partir de anio, mes y dia de scouting
-		// atributos de como encontre el xls.
+		if ( $fechaScouting == null)
+		{
+			// TODO: Si no tengo fecha de scouting, la armo a partir de anio, mes y dia de scouting
+			// atributos de como encontre el xls.	
+		}
 		
 		// 6 - Personas con igual nombre e igual anio de nacimiento.
 		$personas = PersonaPeer::buscarPersonasPorNombreyAnioNacimiento( $this->getNombre(), $fechaNacimiento );
@@ -113,14 +116,6 @@ class ScoutImport extends BaseScoutImport {
 			
 			if ($matchCount > 1)
 				$persona = null;
-				
-			if ( $persona != null )
-			{
-				// Actualizo los datos de la persona.
-				// TODO, necesito una fecha en Persona que me indique de que fecha son los datos.
-				// la comparo con fecha de scouting, si esta ultima es mayor, hay que actualizar los
-				// datos de la persona.
-			}
 			
 		}
 		
@@ -137,11 +132,35 @@ class ScoutImport extends BaseScoutImport {
 			$persona->setTelefono($this->getTelefono());
 			$persona->setCelular ($this->getCelular() );
 			$persona->setEmail($this->getEmail());
+			$persona->setFechaActualizacion ( $fechaScouting );
 			$persona->setObservaciones( $this->getObservaciones() );
 			$persona->setNacionalidad($nacionalidad);
 			$persona->save();
 			
 			$f_new = true;
+		}
+		else if ( $fechaScouting != null && 
+				$fechaScouting->format('U') > $persona->getFechaActualizacion()->format('U') ) 
+		{
+			// HUBO match y estos son datos mas nuevos
+			// Actualizo los datos de la persona.
+			
+			if ( $this->getTelefono() != '' )
+				$persona->setTelefono($this->getTelefono());
+			
+			if ( $this->getCelular() != '' )
+				$persona->setCelular ($this->getCelular() );
+			
+			if ( $this->getEmail() != '' )
+				$persona->setEmail($this->getEmail());
+		
+			if ( $this->getPeso() != -1 )
+				$persona->setPeso ( $this->getPeso() );
+			
+			if ( $this->getAltura() != 0 )
+				$persona->setAltura ( $this->getAltura() );
+
+			$persona->save();
 		}
 		
 		$scout = new PersonaScouting();
