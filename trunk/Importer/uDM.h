@@ -96,7 +96,9 @@ __published:	// IDE-managed Components
 	TMemoField *tCastImportobservaciones;
 	TIntegerField *tCastImportedad;
 	TStringField *tCastImportdia;
-	TAutoIncField *tCastImportid;
+	TStringField *tCastImporttelefono;
+	TStringField *tCastImportcelular;
+	TStringField *tCastImportemail;
 	void __fastcall DataModuleDestroy(TObject *Sender);
 
 private:	// User declarations

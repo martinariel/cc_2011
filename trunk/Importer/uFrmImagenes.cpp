@@ -54,7 +54,6 @@ wchar_t* toWChar (const AnsiString& Str)
 {
   wchar_t* str = new wchar_t[Str.WideCharBufSize()];
   return Str.WideChar(str, Str.WideCharBufSize());
-  delete str;
 }
 
 //---------------------------------------------------------------------------
