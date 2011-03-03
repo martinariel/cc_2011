@@ -29,21 +29,6 @@ class ScoutImport extends BaseScoutImport {
 		parent::__construct();
 	}
 	
-	/**
-	 * Retorna la fecha de naciento calculada.
-	 */
-	public function calcularFechaNacimiento ()
-	{
-		if ( $this->getEdad() < 0 )
-			return null;
-		else
-		{
-			$anio = $this->getAnio() - $this->getEdad();
-			$dt = new DateTime();
-			$dt->setDate($anio, 1, 1);
-			return $dt;
-		}
-	}
 	
 	
 	/**
@@ -67,7 +52,7 @@ class ScoutImport extends BaseScoutImport {
 		
 		if ( $fechaNacimiento == null )
 		{
-			$fechaNacimiento = $this->calcularFechaNacimiento();
+			$fechaNacimiento = GlobalFunctions::calcularFechaNacimiento( $this->getEdad() , $this->getAnio() );
 		}
 		// 5 - Fecha de Scouting
 		$fechaScouting = GlobalFunctions::parsearFecha( $this->getFechaScout() );

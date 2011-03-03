@@ -66,6 +66,23 @@ class GlobalFunctions
 		}
 	}
 	
+	/**
+	 * Retorna la fecha de naciento calculada.
+	 */
+	public static function calcularFechaNacimiento ( $edad , $anioEdad )
+	{
+		if ( $edad < 0 )
+			return null;
+		else
+		{
+			$anio = $anioEdad - $edad;
+			$dt = new DateTime();
+			$dt->setDate($anio, 1, 1);
+			return $dt;
+		}
+	}
+	
+	
 	public static function quitarCaracteresNoNumericos ( $cadena )
 	{
 		$returnValue = "";
