@@ -94,11 +94,12 @@ __published:	// IDE-managed Components
 	TStringField *tCastImportmedidas;
 	TStringField *tCastImportdni;
 	TMemoField *tCastImportobservaciones;
-	TIntegerField *tCastImportedad;
-	TStringField *tCastImportdia;
 	TStringField *tCastImporttelefono;
 	TStringField *tCastImportcelular;
 	TStringField *tCastImportemail;
+	TIntegerField *tCastImportedad;
+	TStringField *tCastImportdia;
+	TAutoIncField *tCastImportid;
 	void __fastcall DataModuleDestroy(TObject *Sender);
 
 private:	// User declarations
