@@ -152,9 +152,7 @@ object DM: TDM
     Top = 40
   end
   object tCastImport: TADOTable
-    ConnectionString = 
-      'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
-      ' Source=cc;Initial Catalog=webapp'
+    Connection = DWConnection
     CursorType = ctStatic
     TableName = 'cast_import'
     Left = 368
@@ -214,13 +212,6 @@ object DM: TDM
       FieldName = 'observaciones'
       BlobType = ftMemo
     end
-    object tCastImportedad: TIntegerField
-      FieldName = 'edad'
-    end
-    object tCastImportdia: TStringField
-      FieldName = 'dia'
-      Size = 45
-    end
     object tCastImporttelefono: TStringField
       FieldName = 'telefono'
       Size = 45
@@ -232,6 +223,17 @@ object DM: TDM
     object tCastImportemail: TStringField
       FieldName = 'email'
       Size = 45
+    end
+    object tCastImportedad: TIntegerField
+      FieldName = 'edad'
+    end
+    object tCastImportdia: TStringField
+      FieldName = 'dia'
+      Size = 45
+    end
+    object tCastImportid: TAutoIncField
+      FieldName = 'id'
+      ReadOnly = True
     end
   end
 end

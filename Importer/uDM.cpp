@@ -429,7 +429,7 @@ void TDM::loadCurrentCast ( void )
 				if ( !analisis )
 				{
 					log ( "   - Vaciando tabla de Proceso." );
-					//clearTable ( "cast_import" );
+					clearTable ( "cast_import" );
 					tCastImport->Open();
 				}
 
@@ -437,14 +437,14 @@ void TDM::loadCurrentCast ( void )
 
 				matchAndLoadCast();
 
-				//uploadMediaList();
+				uploadMediaList();
 
 				XLSConnection->Close();
 
 				if ( !analisis )
 					tCastImport->Close();
 
-				//notifyCastLoad();
+				notifyCastLoad();
 
 				if ( !analisis )
 					addProcessedFile ( currentXLS );

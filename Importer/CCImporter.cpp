@@ -4,10 +4,11 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
+USEFORM("uFrmFolder.cpp", FrmFolder);
 USEFORM("uDM.cpp", DM); /* TDataModule: File Type */
 USEFORM("uFrmMain.cpp", FormMain);
-USEFORM("uFrmFolder.cpp", FrmFolder);
 USEFORM("uFrmImagenes.cpp", FrmImagenes);
+USEFORM("uFrmSinonimos.cpp", FrmSinonimos);
 //---------------------------------------------------------------------------
 WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -19,6 +20,7 @@ WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		Application->CreateForm(__classid(TFormMain), &FormMain);
 		Application->CreateForm(__classid(TFrmFolder), &FrmFolder);
 		Application->CreateForm(__classid(TFrmImagenes), &FrmImagenes);
+		Application->CreateForm(__classid(TFrmSinonimos), &FrmSinonimos);
 		Application->Run();
 	}
 	catch (Exception &exception)
