@@ -541,7 +541,7 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 
                     if ( FindFirst ( path + "\\" + sr.Name + "\\direccion\\*.xls" , faArchive , srAux ) == 0 )
 					{
-						currentXLS = path + "\\" + sr.Name + "direccion\\" + srAux.Name;
+						currentXLS = path + "\\" + sr.Name + "\\direccion\\" + srAux.Name;
 
 						dayFound = true;
 
@@ -1011,9 +1011,12 @@ bool TDM::isMediaFile ( const AnsiString& name )
 		Pos( ".png" , us ) > 0 ||
 		Pos( ".mov" , us ) > 0 ||
 		Pos( ".mpg" , us ) > 0 ||
-		Pos( ".mpeg", us ) > 0 ||
+		Pos( ".mpeg", us ) > 0 );
+		/*
+		||
 		Pos( ".avi" , us ) > 0
 	);
+	*/
 
 }
 
