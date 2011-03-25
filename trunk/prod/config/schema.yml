@@ -13,6 +13,8 @@ propel:
     id:           ~
     nombre:       { type: varchar(45), required: true, default: "" }
     prioridad:    { type: tinyint, required: true, default: 0 }
+    persona_id:   ~
+    updated_at:   ~
     created_at:   ~
   casting:
     id:           ~
@@ -20,7 +22,8 @@ propel:
     anio:         { type: varchar(45), required: true, default: "" }
     fecha:        { type: date }
     estado:       { type: tinyint, default: -1 }
-    updated_at:    ~
+    proyecto_id:  ~
+    updated_at:   ~
     created_at:   ~
   codigos_scouting:
     id:           ~
@@ -40,6 +43,7 @@ propel:
   persona_casting:
     persona_id:     ~
     casting_id:     ~
+    dia_casting_id: ~
     agencia_id:     ~
     peso:           { type: integer, required: true, default: 0 }
     altura:         { type: integer, required: true, default: 0 }
@@ -50,6 +54,7 @@ propel:
     pantalon:       { type: varchar(20), default: -1 }
     camisa:         { type: varchar(20), default: -1 }
     observaciones:  { type: longvarchar }
+    orden:          { type: int }
     updated_at:   ~
     created_at:   ~
   persona:
@@ -67,6 +72,7 @@ propel:
     pantalon:     { type: varchar(20), default: -1 }
     camisa:         { type: varchar(20), default: -1 }
     observaciones:  { type: longvarchar }  
+    activo:         { type: int }
     fecha_actualizacion: { type: date, required: true, default: "0000-00-00" }
     nacionalidad_id:  ~
     created_at:   ~
@@ -154,17 +160,123 @@ propel:
   persona_label:
     persona_id:   ~
     label_id:     ~
-  usuario:
+  cliente:
     id: ~
-    username: { type: varchar(45), required: true }
-    password: { type: varchar(45), required: true }
+    descripcion: { type: varchar(45), required: true }
     created_at: ~
     updated_at: ~
-  grupo:
+  agencia_publicidad:
     id: ~
-    nivel:  { type: tinyint }
-  grupo_usuario:
-     grupo_id: ~
-     usuario_id: ~
-
-
+    descripcion: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  productora:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  castingera:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  proyecto:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    cliente_id: ~
+    agencia_publicidad_id: ~
+    productora_id: ~
+    castingera_id: ~
+    guion: { type: varchar(45), required: true }
+    brief: { type: varchar(45), required: true }
+    precontrato: { type: varchar(45), required: true }
+    timing_produccion: { type: varchar(45), required: true }
+    timing_scouting: { type: varchar(45), required: true }
+    presupuesto: { type: varchar(45) }
+    usuario_director_id: { type: int}
+    usuario_productor_id: { type: int }
+    estado_id: ~
+    created_at: ~
+    updated_at: ~
+  estado:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  personaje:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    proyecto_id: ~
+    cantidad: { type: int }
+    created_at: ~
+    updated_at: ~
+  personaje_referencia:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    personaje_id: ~
+    path_foto: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  dia_casting:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    fecha: { type: datetime , required:true }
+    casting_id: ~
+    created_at: ~
+    updated_at: ~
+  dia_casting_personaje:
+    id: ~
+    dia_casting_id: ~
+    personaje_id: ~
+    cantidad_ideal: { type: int }
+    created_at: ~
+    updated_at: ~
+  dia_scouting:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    fecha: { type: datetime , required:true }
+    proyecto_id: ~
+    created_at: ~
+    updated_at: ~
+  persona_citacion_trace:
+    id: ~
+    persona_citacion_id: ~
+    persona_id: ~
+    created_at: ~
+    updated_at: ~
+  persona_citacion:
+    id: ~
+    persona_id: ~
+    dia_casting_id: ~
+    personaje_id: ~
+    prioridad: { type: int }
+    generico: { type: int }
+    estado_id: ~
+    franja_horaria_id: ~
+    created_at: ~
+    updated_at: ~
+  franja_horaria:
+    id: ~
+    descripcion: { type: varchar(45) }
+    created_at: ~
+    updated_at: ~
+  persona_seleccion:
+    id: ~
+    persona_id: ~
+    personaje_id: ~
+    estado: { type: int }
+    created_at: ~
+    updated_at: ~
+  callback:
+    id: ~
+    descripcion: { type: varchar(45), required: true }
+    fecha: { type: datetime , required:true }
+    casting_id: ~
+    created_at: ~
+    updated_at: ~
+  persona_callback:
+    id: ~
+    persona_seleccion_id: ~
+    callback_id: ~
+    created_at: ~
+    updated_at: ~
