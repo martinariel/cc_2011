@@ -1,0 +1,170 @@
+# config/schema.yml
+# esquema de la base de datos para autogenerar classes
+#
+# @author Eric 
+# @orm Propel
+# @version 2.0
+
+propel:
+  nacionalidad:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  agencia:
+    id:           ~
+    nombre:       { type: varchar(45), required: true, default: "" }
+    prioridad:    { type: tinyint, required: true, default: 0 }
+    created_at:   ~
+  casting:
+    id:           ~
+    nombre:       { type: varchar(45), required: true, default: "" }
+    anio:         { type: varchar(45), required: true, default: "" }
+    fecha:        { type: date }
+    estado:       { type: tinyint, default: -1 }
+    updated_at:    ~
+    created_at:   ~
+  codigos_scouting:
+    id:           ~
+    codigo:       { type: varchar(2), required: true }
+    descripcion:  { type: varchar(45), required: true, default: "" }
+    updated_at:   ~
+    created_at:   ~
+  media:
+    id:           ~
+    archivo:      { type: varchar(45), required: true, default: "" }
+    tipo:         { type: varchar(45), required: true, default: "" }
+    persona_id:   ~
+    personas_scouting_id:  { type: integer , default: -1 } 
+    personas_casting_id:   { type: integer, default: -1  }
+    orden:        { type: integer, required: true, default: 0 }
+    created_at:   ~
+  persona_casting:
+    persona_id:     ~
+    casting_id:     ~
+    agencia_id:     ~
+    peso:           { type: integer, required: true, default: 0 }
+    altura:         { type: integer, required: true, default: 0 }
+    email:          { type: varchar(45) }
+    telefono:       { type: varchar(20) }
+    celular:        { type: varchar(20) }
+    calzado:        { type: varchar(20), default: -1 }
+    pantalon:       { type: varchar(20), default: -1 }
+    camisa:         { type: varchar(20), default: -1 }
+    observaciones:  { type: longvarchar }
+    updated_at:   ~
+    created_at:   ~
+  persona:
+    id:           ~
+    nombre:       { type: varchar(100), required: true, default: "" }
+    dni:          { type: varchar(20), required: true, default: 0 }
+    fecha_nacimiento: { type: date, required: true, default: "0000-00-00" }
+    sexo:         { type: varchar(1), required: true, default: "X" }
+    peso:         { type: integer, required: true, default: 0 }
+    altura:       { type: integer, required: true, default: 0 }
+    email:        { type: varchar(45) }
+    telefono:     { type: varchar(20) }
+    celular:      { type: varchar(20) }
+    calzado:      { type: varchar(20), default: -1 }
+    pantalon:     { type: varchar(20), default: -1 }
+    camisa:         { type: varchar(20), default: -1 }
+    observaciones:  { type: longvarchar }  
+    fecha_actualizacion: { type: date, required: true, default: "0000-00-00" }
+    nacionalidad_id:  ~
+    created_at:   ~
+  scout_import:
+    id:           ~
+    codigo:       { type: integer, required: true, default: 0 }
+    edad:         { type: integer, default: null }
+    peso:         { type: integer, default: null }
+    altura:       { type: integer, default: null }
+    nombre:       { type: varchar(100), default: null }
+    fecha_nacimiento: { type: varchar(12), default: null }
+    fecha_scout:  { type: varchar(12), default: null }
+    lugar_scout:  { type: varchar(45), default: null }
+    observaciones: { type: varchar(255), default: null }
+    actividades:  { type: varchar(255), default: null }
+    email:        { type: varchar(100), default: null }
+    telefono:     { type: varchar(45), default: null }
+    celular:      { type: varchar(45), default: null }
+    nacionalidad:  { type: varchar(45), default: null }
+    idiomas:      { type: varchar(255), default: null }
+    xls_file:     { type: varchar(255), required: true, default: "" }
+    anio:         { type: integer, required: true, default: 0 }
+    mes:          { type: varchar(20), required: true, default: "" }
+    codigo_agrupador: { type: varchar(45), required: true, default: "" }
+    dia:          { type: varchar(45) , required: true, default: "" }
+  persona_scouting: 
+    id:           ~
+    anio:         { type: integer, required: true, default: 0 }
+    id_codigo:    { type: integer, required: true, default: 0 }
+    mes:          { type: integer, required: true, default: 0 }
+    dia_contador: { type: integer, required: true, default: 0 }
+    fecha:        { type: date, default: null }
+    persona_id:   ~
+    peso:         { type: integer, required: true, default: 0 }
+    altura:       { type: integer, required: true, default: 0 }
+    email:        { type: varchar(45) }
+    telefono:     { type: varchar(20) }
+    celular:      { type: varchar(20) }
+    actividades:  { type: varchar(255) }
+    observaciones: { type: varchar(255), required: true, default: "" }
+    lugar_id:      ~
+    nacionalidad_id: ~
+    created_at:   ~
+    updated_at:   ~
+  cast_import:
+    codigo: { type: integer }
+    nombre: { type: varchar(100) }
+    agencia: { type: varchar(45) }
+    pantalon: { type: varchar(45) }
+    camisa: { type: varchar(45) }    
+    calzado: { type: integer }
+    altura: { type: integer }
+    peso: { type: integer }
+    fecha_nacimiento: { type: varchar(45) }
+    fecha_casting: { type: varchar(45) }
+    casting: { type: varchar(45) }
+    anio: { type: integer  }
+    medidas: { type: varchar(45) }
+    dni: { type: varchar(45) }
+    observaciones: { type: longvarchar }
+    telefono: { type: varchar(45) }
+    celular: { type: varchar(45) }
+    email: { type: varchar(45) }
+    edad: { type: integer }
+    dia: { type: varchar(45) }
+  sinonimo_tabla:
+    tabla: { type: varchar(45) }
+  sinonimo:
+    origen:       { type: varchar(50), required: true, default: "" }
+    destino:      { type: varchar(55), required: true, default: "" }
+  lugar:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+    latitud:      { type: float, required: false, default: 0 }
+    longitud:     { type: float, required: false, default: 0 }
+  lenguaje:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  persona_lenguaje:
+    persona_id:   ~
+    lenguaje_id:  ~
+  label:
+    id: ~
+    descripcion:  { type: varchar(100) , required. true, default: "" }
+  persona_label:
+    persona_id:   ~
+    label_id:     ~
+  usuario:
+    id: ~
+    username: { type: varchar(45), required: true }
+    password: { type: varchar(45), required: true }
+    created_at: ~
+    updated_at: ~
+  grupo:
+    id: ~
+    nivel:  { type: tinyint }
+  grupo_usuario:
+     grupo_id: ~
+     usuario_id: ~
+
+
