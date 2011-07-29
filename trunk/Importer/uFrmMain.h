@@ -19,6 +19,7 @@
 #include <Dialogs.hpp>
 #include "uFrmFolder.h"
 #include "uFrmImagenes.h"
+#include "uFrmSeleccionCasting.h"
 //---------------------------------------------------------------------------
 class TFormMain : public TForm
 {
@@ -40,6 +41,7 @@ __published:	// IDE-managed Components
 	TRibbonGroup *RibbonGroup3;
 	TAction *acProcesarImagenes;
 	TAction *AccSinonimos;
+	TAction *accImportarCastingIndividual;
 	void __fastcall acAnalizarScoutExecute(TObject *Sender);
 	void __fastcall acImportarArchivosExecute(TObject *Sender);
 	void __fastcall acAnalizarCastingExecute(TObject *Sender);
@@ -47,6 +49,8 @@ __published:	// IDE-managed Components
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall acProcesarImagenesExecute(TObject *Sender);
 	void __fastcall AccSinonimosExecute(TObject *Sender);
+	void __fastcall Button1Click(TObject *Sender);
+	void __fastcall accImportarCastingIndividualExecute(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);

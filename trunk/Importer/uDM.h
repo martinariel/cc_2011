@@ -174,10 +174,7 @@ private:	// User declarations
 
 	// Loads the currentXLS as a Casting file
 	void loadCurrentCast ( void );
-    void matchAndLoadCast ( void );
-
-	// Extracts the first integer in a string
-	int extractPersonCode ( const AnsiString& fullString );
+	void matchAndLoadCast ( void );
 
 	// Checks if a folder name is a media valid folder.
 	bool isMediaFolder ( const AnsiString& name );
@@ -230,7 +227,12 @@ public:
 	// TODO: Crear una clase GenericLoader como Template Method y crear
 	// dos clases derivadas ScoutLoader y CastLoader así no duplicamos código.
 	// hace falta ahora? no , realmente no.
-	void iterateCasting ( const AnsiString& path , int level = 0 );
+	void iterateCasting ( const AnsiString& pAnio, const AnsiString& path , int level = 0 );
+
+	void loadCast ( const AnsiString& anio , const AnsiString& codigo , const AnsiString& xls );
+
+	// Extracts the first integer in a string
+	int extractPersonCode ( const AnsiString& fullString );
 
 };
 //---------------------------------------------------------------------------
