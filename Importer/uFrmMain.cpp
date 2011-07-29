@@ -58,7 +58,7 @@ void __fastcall TFormMain::acImportarArchivosExecute(TObject *Sender)
 
 		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
 
-		DM->setAnalisis(false);
+		DM->setAnalisis     ( false  );
 		DM->iterateScouting ( folder );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );

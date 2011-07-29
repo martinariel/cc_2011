@@ -89,7 +89,7 @@ object FormMain: TFormMain
   object ActionList1: TActionList
     Images = ImageList1
     Left = 320
-    Top = 248
+    Top = 320
     object acAnalizarScout: TAction
       Caption = 'Analizar Archivos'
       OnExecute = acAnalizarScoutExecute
@@ -116,8 +116,8 @@ object FormMain: TFormMain
     end
   end
   object ImageList1: TImageList
-    Left = 360
-    Top = 224
+    Left = 472
+    Top = 320
   end
   object ActionManager1: TActionManager
     ActionBars = <
@@ -166,8 +166,8 @@ object FormMain: TFormMain
         ActionList = ActionList1
         Caption = 'ActionList1'
       end>
-    Left = 528
-    Top = 264
+    Left = 552
+    Top = 320
     StyleName = 'Ribbon - Obsidian'
     object AccSinonimos: TAction
       Caption = 'Sin'#243'nimos'

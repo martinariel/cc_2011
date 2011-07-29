@@ -11,8 +11,7 @@
 #pragma resource "*.dfm"
 TDM *DM;
 //---------------------------------------------------------------------------
-__fastcall TDM::TDM(TComponent* Owner)
-	: TDataModule(Owner)
+__fastcall TDM::TDM(TComponent* Owner) : TDataModule(Owner)
 {
 	TIniFile* ini = new TIniFile ( ChangeFileExt ( Application->ExeName , ".ini" ) );
 
@@ -24,8 +23,8 @@ __fastcall TDM::TDM(TComponent* Owner)
 	// FTP SETTINGS
 
 	ftpServer   = ini->ReadString ( "FTP" , "SERVER"   , "LOCALHOST" );
-	ftpUser     = ini->ReadString ( "FTP" , "USER"     , "ROOT" );
-	ftpPassword = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT" );
+	ftpUser     = ini->ReadString ( "FTP" , "USER"     , "ROOT"      );
+	ftpPassword = ini->ReadString ( "FTP" , "PASSWORD" , "ROOT"      );
 
 	DWConnection->ConnectionString = ini->ReadString ( "BASE", "CONEXION" , "" );
 	DWConnection->Open();
@@ -178,7 +177,7 @@ void TDM::uploadMediaList ( void )
 	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
 	{
 		MediaFile* mf = *it;
-		AnsiString destino = t + "\\" + ExtractFileName(mf->path );
+		AnsiString destino = t + "\\" + ExtractFileName ( mf->path );
 		CopyFileTo(mf->path , destino );
 		mf->path = destino;
 		Application->ProcessMessages();
@@ -517,11 +516,6 @@ void TDM::loadCurrentCast ( void )
 {
 	UnicodeString a = currentXLS;
 
-	/*
-	if ( !( Pos ( "coca cola (puenzo)" , a ) > 0 ) )
-		return;
-	*/
-
 	if ( analisis || !isFileProcessed( currentXLS ) )
 	{
 		if ( connectXLS ( currentXLS ) )
@@ -719,7 +713,6 @@ void TDM::iterateCasting ( const AnsiString& pAnio , const AnsiString& path , in
 
 		if ( !dayFound )
 		{
-
 			if ( FindFirst ( path + "\\*.xls" , faArchive , sr ) == 0 )
 			{
 
@@ -742,97 +735,93 @@ void TDM::iterateCasting ( const AnsiString& pAnio , const AnsiString& path , in
 
 //--------------------------------------------------------------------------
 
+AnsiString getParent ( const AnsiString& path )
+{
+	return ExpandFileName( path + "\\.." );
+}
+
+//--------------------------------------------------------------------------
+
 void TDM::iterateScouting ( const AnsiString& path , int level )
 {
 	TSearchRec sr;
 
-	if ( level < 4 )
-	{
-		if ( FindFirst ( path + "\\*.*", faDirectory, sr) == 0)
-		{
-			do
-			{
-				if ( sr.Name[1] == '.')
-					continue;
+	AnsiString pathCodigo = getParent ( path       );
+	AnsiString pathAnio   = getParent ( pathCodigo );
 
-				switch ( level )
+	anio   = ExtractFileName ( pathAnio   );
+	codigo = ExtractFileName ( pathCodigo );
+	mes    = ExtractFileName ( path       );
+	dia    = "";
+
+	int anioNumero = StrToIntDef ( anio , -1 );
+
+	if ( anioNumero < 0 )
+	{
+		log ( "Path Incorrecto!!!" );
+		return;
+	}
+
+	//1 - Busco el excel
+	if ( FindFirst ( path + "\\*.xls" , faArchive , sr )  == 0 )
+	{
+		if ( connectXLS( path + "\\" + sr.Name ) )
+		{
+			currentXLS = path + "\\" + sr.Name;
+
+			try
+			{
+
+				log ( "-------------------------------------------------------------------------------------------------" );
+				log ( "Procesando " + currentXLS );
+				log ( "" );
+
+				if ( analisis || !isFileProcessed ( currentXLS ) )
 				{
-				case 0: anio   = sr.Name; break;
-				case 1: codigo = sr.Name; break;
-				case 2:	mes    = sr.Name; break;
-				case 3: dia    = sr.Name; break;
+
+					//2 - Cargo la lista de media
+					loadMediaList ( path );
+
+					//3 Vacio la tabla de proceso
+					if ( !analisis )
+					{
+						log ( "   -  Limpiando tabla de proceso. " );
+						clearTable ( "scout_import") ;
+						tScoutImport->Open();
+					}
+
+					//4 - Proceso el excel
+					loadCurrentScouting();
+
+					////5 - subida FTP
+					uploadMediaList();
+
+					if ( !analisis )
+						tScoutImport->Close();
+
+					XLSConnection->Close();
+
+					//6 - Notifico a la aplicación web para que procese.
+					notifyScoutLoad();
+
+					if ( !analisis ) addProcessedFile( currentXLS );
 				}
-				iterateScouting ( path + "\\" + sr.Name , level + 1 );
+				else
+				{
+					log ( currentXLS + " YA HA SIDO PROCESADO");
+				}
 			}
-			while (FindNext(sr) == 0);
-			FindClose(sr);
+			catch (...)
+			{
+				logError ( "************* ERROR LECTURA XLS : " + path + "\\" + sr.Name );
+			}
+		}
+		else
+		{
+			logError ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
 		}
 	}
-	else
-	{
-		//1 - Busco el excel
-		if ( FindFirst ( path + "\\*.xls" , faArchive , sr )  == 0 )
-		{
-			if ( connectXLS( path + "\\" + sr.Name ) )
-			{
-				currentXLS = path + "\\" + sr.Name;
 
-				try
-				{
-
-					log ( "-------------------------------------------------------------------------------------------------" );
-					log ( "Procesando " + currentXLS );
-					log ( "" );
-
-					if ( analisis || !isFileProcessed ( currentXLS ) )
-					{
-
-						//2 - Cargo la lista de media
-						loadMediaList ( path );
-
-						//3 Vacio la tabla de proceso
-						if ( !analisis )
-						{
-							log ( "   -  Limpiando tabla de proceso. " );
-							clearTable("scout_import");
-							tScoutImport->Open();
-						}
-
-						//
-						//4 - Proceso el excel
-						loadCurrentScouting();
-
-						////5 - subida FTP
-						uploadMediaList();
-
-						if ( !analisis )
-							tScoutImport->Close();
-
-
-						XLSConnection->Close();
-
-						//6 - Notifico a la aplicación web para que procese.
-						notifyScoutLoad();
-
-						if ( !analisis )
-							addProcessedFile( currentXLS );
-					}
-					else
-					{
-						log ( currentXLS + " YA HA SIDO PROCESADO");
-					}
-				}
-				catch (...)
-				{
-					logError ( "************* ERROR LECTURA XLS : " + path + "\\" + sr.Name );
-				}
-			}
-			else
-			{
-				logError ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
-			}
-		}
-    }
 }
 
 //---------------------------------------------------------------------------
@@ -899,8 +888,36 @@ void TDM::clearTable ( const AnsiString& tableName )
 
 void TDM::saveScoutPerson ( ScoutPerson* sp )
 {
-	if ( analisis )
+	if ( analisis || sp->code < 0 )
 		return;
+
+	if ( sp->observations.Length() < 4 ) sp->observations = "";
+
+	if ( sp->height > 1000 )
+		sp->height /= 100;
+
+	AnsiString tel, cel;
+
+	tel = sp->telephone;
+	cel = sp->celphone;
+
+	if ( tel.Length() > 8 )
+	{
+		if ( tel[1] == '1' && tel[2] == '5' )
+		{
+			if ( cel.IsEmpty() )
+			{
+				sp->celphone  = sp->telephone;
+				sp->telephone = "";
+			}
+			else
+			{
+				AnsiString aux = sp->telephone;
+				sp->telephone  = sp->celphone;
+				sp->celphone   = aux;
+			}
+		}
+	}
 
 	tScoutImport->Append();
 
@@ -1180,14 +1197,14 @@ bool TDM::isMediaFile ( const AnsiString& name )
 	UnicodeString us = LowerCase ( name );
 
 	return (
-		Pos( ".jpg" , us ) > 0 ||
-		Pos( ".gif" , us ) > 0 ||
-		Pos( ".png" , us ) > 0 );
-		/*
-		||
-		Pos( ".avi" , us ) > 0
+		Pos ( ".jpg" , us ) > 0 ||
+		Pos ( ".gif" , us ) > 0 ||
+		Pos ( ".png" , us ) > 0 ||
+		Pos ( ".pdf" , us ) > 0 ||
+		Pos ( ".doc" , us ) > 0 ||
+		Pos ( ".mp3" , us ) > 0 ||
+		Pos ( ".mov" , us ) > 0
 	);
-	*/
 
 }
 
