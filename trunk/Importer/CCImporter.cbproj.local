@@ -5,5 +5,7 @@
     <Transaction>2011/01/22 18:41:34.000.776,C:\wamp\www\Casting Club\Importer\Unit1.dfm=C:\wamp\www\Casting Club\Importer\uFrmFolder.dfm</Transaction>
     <Transaction>2011/01/23 14:50:21.000.315,C:\wamp\www\Casting Club\Importer\Unit1.h=C:\wamp\www\Casting Club\Importer\uFrmImagenes.h</Transaction>
     <Transaction>2011/01/23 14:50:21.000.315,C:\wamp\www\Casting Club\Importer\Unit1.dfm=C:\wamp\www\Casting Club\Importer\uFrmImagenes.dfm</Transaction>
+    <Transaction>2011/06/08 16:04:31.000.521,C:\wamp\www\cc_2011\Importer\uFrmSeleccionCasting.h=C:\wamp\www\cc_2011\Importer\Unit1.h</Transaction>
+    <Transaction>2011/06/08 16:04:31.000.521,C:\wamp\www\cc_2011\Importer\uFrmSeleccionCasting.dfm=C:\wamp\www\cc_2011\Importer\Unit1.dfm</Transaction>
   </Transactions>
 </BorlandProject>
