@@ -68,7 +68,7 @@ void __fastcall TFrmImagenes::btnProcesarClick(TObject *Sender)
 		ProgressBar1->Min = 0;
 		ProgressBar1->Max = dirs->size();
 
-		AnsiString comando = "-resize " + edAncho->Text + "x" + edAlto->Text + " *.jpg";
+		AnsiString comando = "-quality 80 -resize " + edAncho->Text + "x" + edAlto->Text + " *.jpg";
 		AnsiString opcion  = "open";
 		AnsiString programa =  "mogrify";
 

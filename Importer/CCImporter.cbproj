@@ -102,16 +102,22 @@
 				<DependentOn>uFrmMain.h</DependentOn>
 				<BuildOrder>2</BuildOrder>
 			</CppCompile>
+			<CppCompile Include="uFrmSeleccionCasting.cpp">
+				<Form>FrmSeleccionCasting</Form>
+				<DependentOn>uFrmSeleccionCasting.h</DependentOn>
+				<BuildOrder>10</BuildOrder>
+			</CppCompile>
 			<CppCompile Include="uFrmSinonimos.cpp">
 				<Form>FrmSinonimos</Form>
 				<DependentOn>uFrmSinonimos.h</DependentOn>
 				<BuildOrder>9</BuildOrder>
 			</CppCompile>
-			<FormResources Include="uFrmFolder.dfm"/>
-			<FormResources Include="uDM.dfm"/>
 			<FormResources Include="uFrmImagenes.dfm"/>
-			<FormResources Include="uFrmSinonimos.dfm"/>
+			<FormResources Include="uFrmFolder.dfm"/>
 			<FormResources Include="uFrmMain.dfm"/>
+			<FormResources Include="uFrmSinonimos.dfm"/>
+			<FormResources Include="uFrmSeleccionCasting.dfm"/>
+			<FormResources Include="uDM.dfm"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

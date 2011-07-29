@@ -25,7 +25,7 @@ object DM: TDM
   end
   object FTP: TIdFTP
     IPVersion = Id_IPv4
-    Passive = True
+    TransferType = ftBinary
     ProxySettings.ProxyType = fpcmNone
     ProxySettings.Port = 0
     Left = 296

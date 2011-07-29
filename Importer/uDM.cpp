@@ -5,6 +5,7 @@
 #pragma hdrstop
 
 #include "uDM.h"
+#include "uFrmMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -44,6 +45,20 @@ __fastcall TDM::TDM(TComponent* Owner)
 	delete ini;
 }
 //---------------------------------------------------------------------------
+
+bool esNumero ( const AnsiString& stri )
+{
+	for ( int i = 0 ; i < stri.Length() ; i++ )
+	{
+		char ch = stri[i+1];
+		if ( isdigit ( ch ) )
+			return true;
+	}
+	return false;
+}
+
+//---------------------------------------------------------------------------
+
 void __fastcall TDM::DataModuleDestroy(TObject *Sender)
 {
 	DWConnection->Close();
@@ -139,28 +154,56 @@ void TDM::setLogMemo ( TMemo* memo )
 
 //---------------------------------------------------------------------------
 
+wchar_t* toWChar (const AnsiString& Str)
+{
+  wchar_t* str = new wchar_t[Str.WideCharBufSize()];
+  return Str.WideChar(str, Str.WideCharBufSize());
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::uploadMediaList ( void )
 {
 	if ( analisis)
 		return;
 
-	log ( "   -  Subiendo Archivos de media al FTP Server. " );
 
-	/*
-    for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+	log ( "   -  Procesando Imagenes. " );
+
+	AnsiString t = ExtractFilePath (Application->ExeName ) + "proceso";
+
+	if ( !DirectoryExists(t) )
+		CreateDir( t );
+
+	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
 	{
 		MediaFile* mf = *it;
-
-		UnicodeString origin = mf->path;
-		UnicodeString dest = "C:\\Archivos\\" + IntToStr( mf->code ) + "_" + mf->name;
-
-		CopyFile( origin.c_str() , dest.c_str() , false );
-
+		AnsiString destino = t + "\\" + ExtractFileName(mf->path );
+		CopyFileTo(mf->path , destino );
+		mf->path = destino;
 		Application->ProcessMessages();
 	}
 
-	return;
-	*/
+	AnsiString comando  = "-quality 80 -resize 640x480 *.jpg";
+	AnsiString opcion   = "open";
+	AnsiString programa =  "mogrify";
+
+	SHELLEXECUTEINFO ShExecInfo;
+
+	ShExecInfo.cbSize       = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask        = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd         = FormMain->Handle;
+	ShExecInfo.lpVerb 	    = toWChar ( opcion );
+	ShExecInfo.lpFile 	    = toWChar( programa );
+	ShExecInfo.lpParameters = toWChar ( comando );
+	ShExecInfo.lpDirectory  = toWChar ( t );
+	ShExecInfo.nShow        = SW_HIDE;
+	ShExecInfo.hInstApp     = NULL;
+
+	ShellExecuteEx(&ShExecInfo);
+	WaitForSingleObject(ShExecInfo.hProcess,INFINITE);
+
+	log ( "   -  Subiendo Archivos de media al FTP Server. " );
 
 	if ( FTP->Connected())
 		FTP->Disconnect();
@@ -175,11 +218,20 @@ void TDM::uploadMediaList ( void )
 	{
 		MediaFile* mf = *it;
 
+		if ( mf->code < 0 )
+			continue;
+
 		UnicodeString origin = mf->path;
 		UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
 
-		FTP->Put ( origin , dest );
+		FTP->Put ( origin , UpperCase ( dest ) );
+		Application->ProcessMessages();
 
+	}
+
+	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
+	{
+		DeleteFileA( (*it)->path.c_str() );
 		Application->ProcessMessages();
 	}
 
@@ -273,8 +325,8 @@ AnsiString TDM::mapDate ( const AnsiString& Column )
 
 void TDM::mapCastPerson ( CastPerson* sp )
 {
-	sp->code   = mapInteger ( COLUMN_CODE );
-	sp->age    = mapInteger ( COLUMN_AGE );
+	sp->code   = mapInteger ( COLUMN_CODE   );
+	sp->age    = mapInteger ( COLUMN_AGE    );
 	sp->weight = mapInteger ( COLUMN_WEIGHT );
 
 	AnsiString t = ( indexMatched[ COLUMN_HEIGHT ] != -1  ) ?
@@ -283,20 +335,18 @@ void TDM::mapCastPerson ( CastPerson* sp )
 
 	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
 
-	//sp->date =
-
-	sp->name 		 = mapString  ( COLUMN_NAME );
-	sp->shirtSize 	 = mapString  ( COLUMN_SHIRT_SIZE );
+	sp->name 		 = mapString  ( COLUMN_NAME 	    );
+	sp->shirtSize 	 = mapString  ( COLUMN_SHIRT_SIZE 	);
 	sp->observations = mapString  ( COLUMN_OBSERVATIONS );
-	sp->telephone 	 = mapString  ( COLUMN_TELEPHONE );
-	sp->celphone 	 = mapString  ( COLUMN_CELPHONE );
-	sp->birthday 	 = mapDate    ( COLUMN_BORNDATE );
-	sp->document 	 = mapString  ( COLUMN_DOCUMENT );
-	sp->pantsSize    = mapString  ( COLUMN_PANTS_SIZE );
-	sp->sizes 		 = mapString  ( COLUMN_SIZES );
-	sp->shoeSize     = mapInteger ( COLUMN_SHOE_SIZE );
-	sp->agency       = mapString  ( COLUMN_AGENCY );
-	sp->email		 = mapString  ( COLUMN_EMAIL );
+	sp->telephone 	 = mapString  ( COLUMN_TELEPHONE 	);
+	sp->celphone 	 = mapString  ( COLUMN_CELPHONE 	);
+	sp->birthday 	 = mapDate    ( COLUMN_BORNDATE 	);
+	sp->document 	 = mapString  ( COLUMN_DOCUMENT 	);
+	sp->pantsSize    = mapString  ( COLUMN_PANTS_SIZE 	);
+	sp->sizes 		 = mapString  ( COLUMN_SIZES 		);
+	sp->shoeSize     = mapInteger ( COLUMN_SHOE_SIZE 	);
+	sp->agency       = mapString  ( COLUMN_AGENCY 		);
+	sp->email		 = mapString  ( COLUMN_EMAIL 		);
 }
 
 //---------------------------------------------------------------------------
@@ -304,6 +354,11 @@ void TDM::mapCastPerson ( CastPerson* sp )
 void TDM::saveCastPerson ( CastPerson* sp )
 {
 	if ( analisis )
+		return;
+
+	AnsiString t = Trim(sp->name);
+
+	if ( t.IsEmpty() )
 		return;
 
 	tCastImport->Append();
@@ -339,7 +394,7 @@ void TDM::saveCastPerson ( CastPerson* sp )
 void TDM::matchAndLoadCast ( void )
 {
 	#ifdef DEBUG_TO_DISC
-	ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".cast_not_match" ).c_str() , ios::app );
+	ofstream notMatchedLog ( ChangeFileExt(Application->ExeName, ".cast_not_match"  ).c_str() , ios::app );
 	ofstream mediaListLog  ( ChangeFileExt(Application->ExeName, ".media_list"      ).c_str() , ios::app );
 	#endif
 
@@ -384,15 +439,47 @@ void TDM::matchAndLoadCast ( void )
 				schema_match_count = 0;
 			}
 		}
-		else if ( !analisis )
+		else
 		{
 			CastPerson* sp = new CastPerson();
 
 			// Get the values
 			mapCastPerson ( sp );
 
-			if ( sp->code > 0 )
+			if ( sp->observations.Length() < 4 )
+				sp->observations = "";
+
+			if ( sp->height > 1000 )
+				sp->height /= 100;
+
+			AnsiString tel, cel;
+
+			tel = sp->telephone;
+			cel = sp->celphone;
+
+			if ( tel.Length() > 8 )
+			{
+				if ( tel[1] == '1' && tel[2] == '5' )
+				{
+					if ( cel.IsEmpty() )
+					{
+						sp->celphone  = sp->telephone;
+						sp->telephone = "";
+					}
+					else
+					{
+						AnsiString aux = sp->telephone;
+						sp->telephone  = sp->celphone;
+						sp->celphone   = aux;
+					}
+				}
+			}
+
+			if ( sp->code > 0 && !analisis )
 				saveCastPerson( sp );
+
+			if ( esNumero ( sp->agency ) )
+				logError ( "Error " + IntToStr ( sp->code) + " " + currentXLS  );
 
 			delete sp;
 		}
@@ -412,8 +499,29 @@ void TDM::matchAndLoadCast ( void )
 
 //---------------------------------------------------------------------------
 
+void TDM::loadCast ( const AnsiString& pAnio , const AnsiString& pCodigo , const AnsiString& xls )
+{
+	if ( !FileExists( xls ) )
+		return;
+
+	anio       = pAnio;
+	codigo     = pCodigo;
+	currentXLS = xls;
+
+	loadCurrentCast();
+}
+
+//---------------------------------------------------------------------------
+
 void TDM::loadCurrentCast ( void )
 {
+	UnicodeString a = currentXLS;
+
+	/*
+	if ( !( Pos ( "coca cola (puenzo)" , a ) > 0 ) )
+		return;
+	*/
+
 	if ( analisis || !isFileProcessed( currentXLS ) )
 	{
 		if ( connectXLS ( currentXLS ) )
@@ -468,10 +576,12 @@ void TDM::loadCurrentCast ( void )
 
 //---------------------------------------------------------------------------
 
-void TDM::iterateCasting ( const AnsiString& path , int level )
+void TDM::iterateCasting ( const AnsiString& pAnio , const AnsiString& path , int level )
 {
 	TSearchRec sr;
 	TSearchRec srAux;
+
+	anio = pAnio;
 
 	if ( level < 2 )
 	{
@@ -484,20 +594,45 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 
 				switch ( level )
 				{
-				case 0: anio   = sr.Name; break;
-				case 1: codigo = sr.Name; break;
+				case 1:
+					codigo = sr.Name;
+					break;
 				}
-				iterateCasting ( path + "\\" + sr.Name , level + 1 );
+				iterateCasting ( pAnio , path + "\\" + sr.Name , level + 1 );
 			}
 			while (FindNext(sr) == 0);
 			FindClose(sr);
-		}	}	else if ( level == 2 )	{		if ( DirectoryExists( path + "\\casting\\" ) )
+		}
+	}
+	else if ( level == 2 )
+	{
+		if ( DirectoryExists( path + "\\casting\\" ) )
 		{
-			iterateCasting ( path +  "\\casting\\" , level + 1 );
+			iterateCasting ( pAnio, path +  "\\casting\\" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\direccion\\casting\\produccion" ) )
+		{
+			iterateCasting ( pAnio, path + "\\direccion\\casting\\produccion" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\dirección\\casting\\producción" ) )
+		{
+			iterateCasting ( pAnio, path + "\\dirección\\casting\\producción" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\dirección\\casting\\produccion" ) )
+		{
+			iterateCasting ( pAnio, path + "\\dirección\\casting\\produccion" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\direccion\\casting\\producción" ) )
+		{
+			iterateCasting ( pAnio, path + "\\direccion\\casting\\producción" , level + 1 );
 		}
 		else if ( DirectoryExists ( path + "\\direccion\\casting\\" ) )
 		{
-			iterateCasting ( path + "\\direccion\\casting\\" , level + 1 );
+			iterateCasting ( pAnio, path + "\\direccion\\casting\\" , level + 1 );
+		}
+		else if ( DirectoryExists ( path + "\\dirección\\casting\\" ) )
+		{
+			iterateCasting ( pAnio, path + "\\dirección\\casting\\" , level + 1 );
 		}
 		else
 		{
@@ -536,18 +671,43 @@ void TDM::iterateCasting ( const AnsiString& path , int level )
 				}
 				else
 				{
-					// 	Me fijo si existe en la carpeta "direccion"
+					// 	Me fijo si existe en la carpeta "produccion"
 					FindClose ( srAux );
 
-                    if ( FindFirst ( path + "\\" + sr.Name + "\\direccion\\*.xls" , faArchive , srAux ) == 0 )
+					if ( FindFirst ( path + "\\" + sr.Name + "\\produccion\\*.xls" , faArchive , srAux ) == 0 )
 					{
-						currentXLS = path + "\\" + sr.Name + "\\direccion\\" + srAux.Name;
-
+						currentXLS = path + "\\" + sr.Name + "\\produccion\\" + srAux.Name;
 						dayFound = true;
-
-						//log ( "DIA op2: " + currentXLS );
-
-						// Load current XLS
+						loadCurrentCast();
+					}
+					else if ( FindFirst ( path + "\\" + sr.Name + "\\producción\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "\\producción\\" + srAux.Name;
+						dayFound = true;
+						loadCurrentCast();
+					}
+					else if ( FindFirst ( path + "\\" + sr.Name + "\\producción\\producción\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "\\producción\\producción\\" + srAux.Name;
+						dayFound = true;
+						loadCurrentCast();
+					}
+					else if ( FindFirst ( path + "\\" + sr.Name + "\\producción\\produccion\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "\\producción\\produccion\\" + srAux.Name;
+						dayFound = true;
+						loadCurrentCast();
+					}
+					else if ( FindFirst ( path + "\\" + sr.Name + "\\produccion\\producción\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "\\produccion\\producción\\" + srAux.Name;
+						dayFound = true;
+						loadCurrentCast();
+					}
+					else if ( FindFirst ( path + "\\" + sr.Name + "\\produccion\\produccion\\*.xls" , faArchive , srAux ) == 0 )
+					{
+						currentXLS = path + "\\" + sr.Name + "\\produccion\\produccion\\" + srAux.Name;
+						dayFound = true;
 						loadCurrentCast();
 					}
 				}
@@ -606,7 +766,11 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 			}
 			while (FindNext(sr) == 0);
 			FindClose(sr);
-		}	}	else	{		//1 - Busco el excel
+		}
+	}
+	else
+	{
+		//1 - Busco el excel
 		if ( FindFirst ( path + "\\*.xls" , faArchive , sr )  == 0 )
 		{
 			if ( connectXLS( path + "\\" + sr.Name ) )
@@ -668,7 +832,8 @@ void TDM::iterateScouting ( const AnsiString& path , int level )
 				logError ( "************ ERROR APERTURA XLS : " + path + "\\" + sr.Name );
 			}
 		}
-    }}
+    }
+}
 
 //---------------------------------------------------------------------------
 
@@ -721,7 +886,6 @@ void TDM::loadMediaListRecursive ( const AnsiString& path , list<MediaFile*>* re
 		while ( FindNext ( sr ) == 0 );
 		FindClose(sr);
 	}
-
 }
 
 //---------------------------------------------------------------------------
@@ -760,8 +924,8 @@ void TDM::saveScoutPerson ( ScoutPerson* sp )
 	/// Datos de cabecera ( o como llegue a cada una de las personas)
 	tScoutImportxls_file->Value         = currentXLS;
 	tScoutImportanio->Value             = StrToInt ( anio );
-	tScoutImportmes->Value              = Trim(UpperCase(mes ));
-	tScoutImportdia->Value     			= Trim(UpperCase(dia));
+	tScoutImportmes->Value              = Trim(UpperCase(mes   ));
+	tScoutImportdia->Value     			= Trim(UpperCase(dia   ));
 	tScoutImportcodigo_agrupador->Value = Trim(UpperCase(codigo));
 
 	tScoutImport->Post();
@@ -785,17 +949,20 @@ void TDM::mapScoutPerson ( ScoutPerson* sp )
 
 	sp->height = StrToFloatDef( t , 0 ) * 100; //cm
 
-	sp->date         = mapString ( COLUMN_DATE );
-	sp->name         = mapString ( COLUMN_NAME );
-	sp->place        = mapString ( COLUMN_PLACE );
-	sp->observations = mapString ( COLUMN_OBSERVATIONS );
-	sp->telephone    = mapString ( COLUMN_TELEPHONE );
-	sp->celphone     = mapString ( COLUMN_CELPHONE );
-	sp->borndate     = mapString ( COLUMN_BORNDATE );
-	sp->email        = mapString ( COLUMN_EMAIL );
-	sp->activities   = mapString ( COLUMN_ACTIVITIES );
-	sp->nacionality  = mapString ( COLUMN_NACIONALITY );
-	sp->languages    = mapString ( COLUMN_LANGUAGES );
+	sp->date         = mapString ( COLUMN_DATE 			);
+	sp->name         = mapString ( COLUMN_NAME 			);
+	sp->place        = mapString ( COLUMN_PLACE 		);
+	sp->observations = mapString ( COLUMN_OBSERVATIONS 	);
+	sp->telephone    = mapString ( COLUMN_TELEPHONE 	);
+	sp->celphone     = mapString ( COLUMN_CELPHONE 		);
+	sp->borndate     = mapString ( COLUMN_BORNDATE 		);
+	sp->email        = mapString ( COLUMN_EMAIL 		);
+	sp->activities   = mapString ( COLUMN_ACTIVITIES 	);
+	sp->nacionality  = mapString ( COLUMN_NACIONALITY 	);
+	sp->languages    = mapString ( COLUMN_LANGUAGES 	);
+	
+	// Color de ojos, Color de Pelo, Contextura , Tez
+	
 }
 
 //---------------------------------------------------------------------------
@@ -869,15 +1036,15 @@ void TDM::openXLSSheet ( void )
 	{
 		XLSQuery->Open();
 	}
-	catch ( ... )
+	catch ( Exception& e )
 	{
-
+        ShowMessage ( e.Message );
 		try
 		{
 			XLSQuery->SQL->Text = "Select * from [Sheet1$]";
 			XLSQuery->Open();
 		}
-		catch ( ... )
+		catch ( Exception& e )
 		{
 			// intento por sinonimos de hojas de xls, motherfuckers!
 			openXLSSheetBySinomy ();
@@ -899,6 +1066,12 @@ void TDM::matchColumns ( int* schema_match_count, list<AnsiString>* notMatchedCo
 		{
 			t = Trim( UpperCase(t) );
 			t = StringReplace ( t , "  " , " " , TReplaceFlags() << rfReplaceAll );
+			t = StringReplace ( t , "ú" , "Ú" , TReplaceFlags() << rfReplaceAll );
+			t = StringReplace ( t , "á" , "Á" , TReplaceFlags() << rfReplaceAll );
+			t = StringReplace ( t , "é" , "É" , TReplaceFlags() << rfReplaceAll );
+			t = StringReplace ( t , "ó" , "Ó" , TReplaceFlags() << rfReplaceAll );
+			t = StringReplace ( t , "í" , "Í" , TReplaceFlags() << rfReplaceAll );
+
 
 			map<AnsiString,AnsiString>::iterator found = columnsMatch->find ( t );
 			if ( found != columnsMatch->end() )
@@ -997,7 +1170,8 @@ void TDM::loadCurrentScouting ( void )
 
 bool TDM::isMediaFolder ( const AnsiString& name )
 {
-	return ( name[1] != '.' );
+	int posicion = Pos ( "callback" , LowerCase( name ) );
+	return ( name[1] != '.' && posicion == 0 );
 }
 //---------------------------------------------------------------------------
 
@@ -1008,10 +1182,7 @@ bool TDM::isMediaFile ( const AnsiString& name )
 	return (
 		Pos( ".jpg" , us ) > 0 ||
 		Pos( ".gif" , us ) > 0 ||
-		Pos( ".png" , us ) > 0 ||
-		Pos( ".mov" , us ) > 0 ||
-		Pos( ".mpg" , us ) > 0 ||
-		Pos( ".mpeg", us ) > 0 );
+		Pos( ".png" , us ) > 0 );
 		/*
 		||
 		Pos( ".avi" , us ) > 0
@@ -1032,11 +1203,15 @@ void TDM::clearMediaList ( void )
 
 //---------------------------------------------------------------------------
 
+
 int TDM::extractPersonCode ( const AnsiString& fullString )
 {
 	AnsiString temp;
 	for ( int i = 0 ; i < fullString.Length() ; i++ )
 	{
+		if ( i > 7 )
+			break;
+
 		char ch = fullString[i+1];
 		if ( !isdigit(ch) )
 			if ( temp.Length() > 0 )
@@ -1101,8 +1276,3 @@ void TDM::clearScoutColumnsMatched ( void )
 	indexMatched[COLUMN_AGENCY]       = -1;
 	indexMatched[COLUMN_SIZES]        = -1;
 }
-
-
-
-
-

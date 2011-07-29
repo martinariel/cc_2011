@@ -75,7 +75,6 @@ void __fastcall TFormMain::acAnalizarCastingExecute(TObject *Sender)
 	FrmFolder->Caption = "Seleccione el directorio de Casting ... ";
 	if ( FrmFolder->ShowModal() == mrOk )
 	{
-
 		archivo = ExtractFilePath ( Application->ExeName ) + "\\CCImporter.cast_not_match";
 		if ( FileExists(archivo) )
 			DeleteFileW ( archivo );
@@ -85,8 +84,19 @@ void __fastcall TFormMain::acAnalizarCastingExecute(TObject *Sender)
 			DeleteFileW ( archivo );
 
 		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+		AnsiString anio   = ExtractFileName ( folder );
+
+		int anioNumero = StrToIntDef ( anio , -1 );
+		int anioInt = StrToInt ( Now().FormatString("YYYY") );
+
+		if ( anioNumero < 2000 || anioNumero > anioInt )
+		{
+			ShowMessage ( "Debe seleccionar una carpeta de año." );
+			return;
+		}
+
 		DM->setAnalisis(true);
-		DM->iterateCasting ( folder );
+		DM->iterateCasting ( anio , folder );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
@@ -102,8 +112,19 @@ void __fastcall TFormMain::acImportarCastingExecute(TObject *Sender)
 	if ( FrmFolder->ShowModal() == mrOk )
 	{
 		AnsiString folder = FrmFolder->DirectoryListBox1->Directory;
+		AnsiString anio   = ExtractFileName ( folder );
+
+		int anioNumero = StrToIntDef ( anio , -1 );
+		int anioInt = StrToInt ( Now().FormatString("YYYY") );
+
+		if ( anioNumero < 2000 || anioNumero > anioInt )
+		{
+			ShowMessage ( "Debe seleccionar una carpeta de año." );
+			return;
+		}
+
 		DM->setAnalisis(false);
-		DM->iterateCasting ( folder );
+		DM->iterateCasting ( anio , folder );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
 		DM->log ( " ----------------------------------------------------------------------------------------------------------------------" );
@@ -127,6 +148,33 @@ void __fastcall TFormMain::acProcesarImagenesExecute(TObject *Sender)
 void __fastcall TFormMain::AccSinonimosExecute(TObject *Sender)
 {
 	FrmSinonimos->ShowModal();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::Button1Click(TObject *Sender)
+{
+	int a = DM->extractPersonCode("CLARA KOVACIC (3).JPG");
+
+	a++;
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::accImportarCastingIndividualExecute(TObject *Sender)
+{
+	FrmSeleccionCasting->cargar();
+	if ( FrmSeleccionCasting->ShowModal() == mrOk )
+	{
+		AnsiString archivo  = FrmSeleccionCasting->edArchivo->Text;
+		AnsiString proyecto = FrmSeleccionCasting->edProyecto->Text;
+		AnsiString anio     = FrmSeleccionCasting->cmbAnio->Text;
+
+		if ( anio.IsEmpty() || archivo.IsEmpty() || proyecto.IsEmpty() )
+			return;
+
+		DM->loadCast ( anio , proyecto , archivo );
+
+	}
 }
 //---------------------------------------------------------------------------
 
