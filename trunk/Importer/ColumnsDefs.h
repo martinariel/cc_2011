@@ -22,5 +22,9 @@
 #define COLUMN_DOCUMENT     "DOCUMENT"
 #define COLUMN_AGENCY       "AGENCY"
 #define COLUMN_SIZES        "SIZES"
+#define COLUMN_HAIR			"HAIR"
+#define COLUMN_EYES			"EYES"
+#define COLUMN_SKIN			"SKIN"
+#define COLUMN_SIZE         "SIZE"
 
 #endif

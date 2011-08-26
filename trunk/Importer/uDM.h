@@ -100,6 +100,11 @@ __published:	// IDE-managed Components
 	TIntegerField *tCastImportedad;
 	TStringField *tCastImportdia;
 	TAutoIncField *tCastImportid;
+	TStringField *tScoutImportCOLOR_PELO;
+	TStringField *tScoutImportCOLOR_OJOS;
+	TStringField *tScoutImportTEZ;
+	TStringField *tScoutImportCONTEXTURA;
+	TStringField *tScoutImportAGENCIA;
 	void __fastcall DataModuleDestroy(TObject *Sender);
 
 private:	// User declarations
