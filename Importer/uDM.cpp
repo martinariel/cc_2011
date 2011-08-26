@@ -945,6 +945,12 @@ void TDM::saveScoutPerson ( ScoutPerson* sp )
 	tScoutImportdia->Value     			= Trim(UpperCase(dia   ));
 	tScoutImportcodigo_agrupador->Value = Trim(UpperCase(codigo));
 
+	tScoutImportCOLOR_OJOS->Value       = Trim ( UpperCase ( sp->eyes   ) );
+	tScoutImportCOLOR_PELO->Value       = Trim ( UpperCase ( sp->hair   ) );
+	tScoutImportCONTEXTURA->Value		= Trim ( UpperCase ( sp->size   ) );
+	tScoutImportAGENCIA->Value          = Trim ( UpperCase ( sp->agency ) );
+	tScoutImportTEZ->Value				= Trim ( UpperCase ( sp->skin   ) );
+
 	tScoutImport->Post();
 }
 
@@ -977,9 +983,12 @@ void TDM::mapScoutPerson ( ScoutPerson* sp )
 	sp->activities   = mapString ( COLUMN_ACTIVITIES 	);
 	sp->nacionality  = mapString ( COLUMN_NACIONALITY 	);
 	sp->languages    = mapString ( COLUMN_LANGUAGES 	);
-	
-	// Color de ojos, Color de Pelo, Contextura , Tez
-	
+	sp->skin		 = mapString ( COLUMN_SKIN		    );
+	sp->size		 = mapString ( COLUMN_SIZE			);
+	sp->eyes		 = mapString ( COLUMN_EYES			);
+	sp->hair		 = mapString ( COLUMN_HAIR			);
+	sp->agency		 = mapString ( COLUMN_AGENCY        );
+
 }
 
 //---------------------------------------------------------------------------
@@ -1292,4 +1301,8 @@ void TDM::clearScoutColumnsMatched ( void )
 	indexMatched[COLUMN_DOCUMENT]     = -1;
 	indexMatched[COLUMN_AGENCY]       = -1;
 	indexMatched[COLUMN_SIZES]        = -1;
+	indexMatched[COLUMN_HAIR]		  = -1;
+	indexMatched[COLUMN_EYES]		  = -1;
+	indexMatched[COLUMN_SIZE]		  = -1;
+	indexMatched[COLUMN_SKIN]		  = -1;
 }

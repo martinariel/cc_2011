@@ -31,7 +31,7 @@ void __fastcall TFrmSinonimos::Button2Click(TObject *Sender)
 {
 
 	DM->tSinonimos->Insert();
-	DM->tSinonimosorigen->Value = Edit1->Text;
+	DM->tSinonimosorigen->Value  = Edit1->Text;
 	DM->tSinonimosdestino->Value = Edit2->Text;
 	DM->tSinonimos->Post();
 }

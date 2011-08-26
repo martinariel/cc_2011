@@ -5,8 +5,8 @@ object DM: TDM
   Width = 591
   object DWConnection: TADOConnection
     ConnectionString = 
-      'Provider=MSDASQL.1;Password=1234;Persist Security Info=True;User' +
-      ' ID=import;Data Source=cc;Initial Catalog=cc'
+      'Provider=MSDASQL.1;Persist Security Info=False;User ID=root;Data' +
+      ' Source=cc;Initial Catalog=cc;'
     LoginPrompt = False
     Provider = 'MSDASQL.1'
     Left = 40
@@ -132,6 +132,26 @@ object DM: TDM
     end
     object tScoutImportdia: TStringField
       FieldName = 'dia'
+      Size = 45
+    end
+    object tScoutImportCOLOR_PELO: TStringField
+      FieldName = 'COLOR_PELO'
+      Size = 45
+    end
+    object tScoutImportCOLOR_OJOS: TStringField
+      FieldName = 'COLOR_OJOS'
+      Size = 45
+    end
+    object tScoutImportTEZ: TStringField
+      FieldName = 'TEZ'
+      Size = 45
+    end
+    object tScoutImportCONTEXTURA: TStringField
+      FieldName = 'CONTEXTURA'
+      Size = 45
+    end
+    object tScoutImportAGENCIA: TStringField
+      FieldName = 'AGENCIA'
       Size = 45
     end
   end
