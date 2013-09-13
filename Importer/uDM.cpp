@@ -204,29 +204,60 @@ void TDM::uploadMediaList ( void )
 
 	log ( "   -  Subiendo Archivos de media al FTP Server. " );
 
-	if ( FTP->Connected())
-		FTP->Disconnect();
-
-	FTP->Host     = ftpServer;
-	FTP->Username = ftpUser;
-	FTP->Password = ftpPassword;
-
-	FTP->Connect();
-
 	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
 	{
+
 		MediaFile* mf = *it;
 
 		if ( mf->code < 0 )
 			continue;
 
-		UnicodeString origin = mf->path;
-		UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
+		try
+		{
 
-		FTP->Put ( origin , UpperCase ( dest ) );
-		Application->ProcessMessages();
+
+			if ( FTP->Connected())
+				FTP->Disconnect();
+
+			FTP->Host     = ftpServer;
+			FTP->Username = ftpUser;
+			FTP->Password = ftpPassword;
+
+			FTP->Connect();
+
+			UnicodeString origin = mf->path;
+			UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
+
+			FTP->Put ( origin , UpperCase ( dest ) );
+
+
+			Application->ProcessMessages();
+		}
+		catch (  ... )
+		{
+			if ( FTP->Connected())
+				FTP->Disconnect();
+
+			FTP->Host     = ftpServer;
+			FTP->Username = ftpUser;
+			FTP->Password = ftpPassword;
+
+			FTP->Connect();
+
+			UnicodeString origin = mf->path;
+			UnicodeString dest = IntToStr( mf->code ) + "_" + mf->name;
+
+			FTP->Put ( origin , UpperCase ( dest ) );
+
+
+			Application->ProcessMessages()  ;
+        }
+
 
 	}
+
+	if ( FTP->Connected())
+		FTP->Disconnect();
 
 	for ( list<MediaFile*>::const_iterator it = mediaList->begin() ; it != mediaList->end() ; ++it )
 	{
@@ -508,6 +539,8 @@ void TDM::loadCast ( const AnsiString& pAnio , const AnsiString& pCodigo , const
 	currentXLS = xls;
 
 	loadCurrentCast();
+
+	log (  "Finalizado");
 }
 
 //---------------------------------------------------------------------------
@@ -552,9 +585,9 @@ void TDM::loadCurrentCast ( void )
 					addProcessedFile ( currentXLS );
 
 			}
-			catch ( ... )
+			catch ( Exception& e )
 			{
-				logError ( " ************ ERROR: loadCurrentCast" );
+				logError ( " ************ ERROR: loadCurrentCast, " + e.Message );
 			}
 		}
 		else
